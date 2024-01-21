@@ -172,6 +172,49 @@ def do_test_serializer(suite_base, cat, num, inputpath, expectedpath, context, o
     _compare_json(expected_json, result_json)
 
 
+def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options):
+    input_uri = suite_base + inputpath
+    input_graph = ConjunctiveGraph()
+
+    if "contentType" not in options:
+        options["contentType"] = "text/html"
+
+    input_src = make_fake_urlinputsource(
+        input_uri, format="json-ld", suite_base=suite_base, options=options
+    )
+    p = JsonLDParser()
+    p.parse(
+        input_src,
+        input_graph,
+        base=input_src.getPublicId(),
+        context_data=context,
+        generalized_rdf=True,
+    )
+
+    expected_json = _load_json(expectedpath)
+    use_native_types = True  # CONTEXT in input_obj
+    result_json = from_rdf(
+        input_graph,
+        context,
+        base="./",  # deliberately set base different to the input base
+        use_native_types=options.get("useNativeTypes", use_native_types),
+        use_rdf_type=options.get("useRdfType", False),
+    )
+
+    def _prune_json(data):
+        if CONTEXT in data:
+            data.pop(CONTEXT)
+        if GRAPH in data:
+            data = data[GRAPH]
+        # def _remove_empty_sets(obj):
+        return data
+
+    expected_json = _prune_json(expected_json)
+    result_json = _prune_json(result_json)
+
+    _compare_json(expected_json, result_json)
+
+
 def _load_nquads(source):
     graph = ConjunctiveGraph()
     with open(source) as f:

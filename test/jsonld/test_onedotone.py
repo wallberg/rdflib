@@ -23,7 +23,6 @@ unsupported_tests += (
     "remote",
 )
 unsupported_tests += ("flatten", "compact", "expand")
-unsupported_tests += ("html",)
 unsupported_tests += ("fromRdf",)  # The JSON-LD 1.1 enhancement applies to parsing only
 
 known_bugs: Tuple[str, ...] = (
@@ -139,6 +138,56 @@ known_bugs: Tuple[str, ...] = (
     # TODO: Rdflib should silently reject bad predicate URIs
     "toRdf/wf02-in",
     # TODO: we don't extract context or json-ld that's embedded in HTML
+    "html/c001-in",
+    "html/c002-in",
+    "html/c003-in",
+    "html/c004-in",
+    # "html/e001-in",
+    "html/e002-in",
+    "html/e003-in",
+    "html/e004-in",
+    "html/e005-in",
+    "html/e006-in",
+    "html/e007-in",
+    "html/e008-in",
+    "html/e009-in",
+    "html/e010-in",
+    "html/e011-in",
+    "html/e012-in",
+    "html/e013-in",
+    "html/e014-in",
+    "html/e015-in",
+    "html/e016-in",
+    "html/e017-in",
+    "html/e018-in",
+    "html/e019-in",
+    "html/e020-in",
+    "html/e021-in",
+    "html/e022-in",
+    "html/f001-in",
+    "html/f002-in",
+    "html/f003-in",
+    "html/f004-in",
+    "html/r001-in",
+    "html/r002-in",
+    "html/r003-in",
+    "html/r004-in",
+    "html/r005-in",
+    "html/r006-in",
+    "html/r007-in",
+    "html/r010-in",
+    "html/r011-in",
+    "html/r012-in",
+    "html/r013-in",
+    "html/r014-in",
+    "html/r015-in",
+    "html/r016-in",
+    "html/r017-in",
+    "html/r018-in",
+    "html/r019-in",
+    "html/r020-in",
+    "html/r021-in",
+    "html/r022-in",
     "remote-doc/0013-in",
     "remote-doc/la01-in",
     "remote-doc/la02-in",
@@ -219,6 +268,8 @@ def get_test_suite_cases():
                 func = runner.do_test_json
             else:  # toRdf
                 func = runner.do_test_parser
+        elif inputpath.endswith(".html"): # html
+            func = runner.do_test_html
         else:  # fromRdf
             func = runner.do_test_serializer
         rdf_test_uri = URIRef("{0}{1}-manifest#t{2}".format(TC_BASE, cat, num))
