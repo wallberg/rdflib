@@ -14,6 +14,7 @@ else:
     except ImportError:
         import simplejson as json
 
+from html.parser import HTMLParser
 from io import TextIOBase, TextIOWrapper
 from posixpath import normpath, sep
 from urllib.parse import urljoin, urlsplit, urlunsplit
@@ -50,7 +51,13 @@ def source_to_json(
             use_stream = stream
         else:
             use_stream = TextIOWrapper(stream, encoding="utf-8")
-        return json.load(use_stream)
+
+        if source.content_type in ("text/html", "application/xhtml+xml"):
+            parser = HTMLJSONParser()
+            parser.feed(use_stream.read())
+            return parser.get_json()
+        else:
+            return json.load(use_stream)
     finally:
         stream.close()
 
@@ -126,3 +133,38 @@ __all__ = [
     "norm_url",
     "context_from_urlinputsource",
 ]
+
+
+class HTMLJSONParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.json = []
+        self.contains_json = False
+
+    def handle_starttag(self, tag, attrs):
+        self.contains_json = False
+
+        # Only set self. contains_json to True if the
+        # type is 'application/ld+json'
+        if tag == "script":
+            for (attr, value) in attrs:
+                if attr == 'type' and value == 'application/ld+json':
+                    self.contains_json = True
+                else:
+                    # Nothing to do
+                    continue
+
+    def handle_data(self, data):
+        # Only do something when we know the context is a
+        # script element containing application/ld+json
+
+        if self.contains_json is True:
+            if data.strip() == "":
+                # skip empty data elements
+                return
+
+            # Try to parse the json
+            self.json.append(json.loads(data))
+
+    def get_json(self):
+        return self.json
