@@ -33,6 +33,8 @@ def make_fake_urlinputsource(input_uri, format=None, suite_base=None, options={}
     source.links = []
     if local_url.endswith((".jsonld", ".jldt")):
         source.content_type = "application/ld+json"
+    elif local_url.endswith(".html"):
+        source.content_type = "text/html"
     else:
         source.content_type = "application/json"
     source.format = format
@@ -175,9 +177,6 @@ def do_test_serializer(suite_base, cat, num, inputpath, expectedpath, context, o
 def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options):
     input_uri = suite_base + inputpath
     input_graph = ConjunctiveGraph()
-
-    if "contentType" not in options:
-        options["contentType"] = "text/html"
 
     input_src = make_fake_urlinputsource(
         input_uri, format="json-ld", suite_base=suite_base, options=options
