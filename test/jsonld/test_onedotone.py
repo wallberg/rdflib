@@ -138,7 +138,7 @@ known_bugs: Tuple[str, ...] = (
     # TODO: Rdflib should silently reject bad predicate URIs
     "toRdf/wf02-in",
     # TODO: we don't extract context or json-ld that's embedded in HTML
-    # "html/c001-in",
+    "html/c001-in",
     "html/c002-in",
     "html/c003-in",
     "html/c004-in",
@@ -148,7 +148,7 @@ known_bugs: Tuple[str, ...] = (
     "html/e004-in",
     "html/e005-in",
     "html/e006-in",
-    "html/e007-in",
+    # "html/e007-in",
     "html/e008-in",
     "html/e009-in",
     "html/e010-in",
@@ -159,7 +159,7 @@ known_bugs: Tuple[str, ...] = (
     "html/e015-in",
     "html/e016-in",
     "html/e017-in",
-    "html/e018-in",
+    # "html/e018-in",
     "html/e019-in",
     "html/e020-in",
     "html/e021-in",
