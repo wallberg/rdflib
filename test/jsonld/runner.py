@@ -181,11 +181,14 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
     input_src = make_fake_urlinputsource(
         input_uri, format="json-ld", suite_base=suite_base, options=options
     )
+
+    base = options.get('base') or input_src.getPublicId()
+
     p = JsonLDParser()
     p.parse(
         input_src,
         input_graph,
-        base=input_src.getPublicId(),
+        base=base,
         context_data=context,
         generalized_rdf=True,
     )
@@ -210,6 +213,9 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
 
     expected_json = _prune_json(expected_json)
     result_json = _prune_json(result_json)
+
+    print(f'{expected_json=}')
+    print(f'{result_json=}')
 
     _compare_json(expected_json, result_json)
 
