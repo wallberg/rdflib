@@ -33,12 +33,12 @@ def source_to_json(
     source: Optional[
         Union[IO[bytes], TextIO, InputSource, str, bytes, pathlib.PurePath]
     ]
-) -> Optional[Any]:
+) -> Optional[Tuple[Any, str]] :
     if isinstance(source, PythonInputSource):
-        return source.data
+        return (source.data, None)
 
     if isinstance(source, StringInputSource):
-        return json.load(source.getCharacterStream())
+        return (json.load(source.getCharacterStream()), None)
 
     # TODO: conneg for JSON (fix support in rdflib's URLInputSource!)
     source = create_input_source(source, format="json-ld")
@@ -55,9 +55,9 @@ def source_to_json(
         if source.content_type in ("text/html", "application/xhtml+xml"):
             parser = HTMLJSONParser()
             parser.feed(use_stream.read())
-            return parser.get_json()
+            return (parser.get_json(), parser.get_base())
         else:
-            return json.load(use_stream)
+            return (json.load(use_stream), None)
     finally:
         stream.close()
 
@@ -140,6 +140,7 @@ class HTMLJSONParser(HTMLParser):
         super().__init__()
         self.json = []
         self.contains_json = False
+        self.base = None
 
     def handle_starttag(self, tag, attrs):
         self.contains_json = False
@@ -151,8 +152,15 @@ class HTMLJSONParser(HTMLParser):
                 if attr == 'type' and value == 'application/ld+json':
                     self.contains_json = True
                 else:
+                    # TODO: determine if this else is necessary
                     # Nothing to do
                     continue
+
+        elif tag == "base":
+            for (attr, value) in attrs:
+                if attr == 'href':
+                    self.base = value
+                    print(f'{self.base=}')
 
     def handle_data(self, data):
         # Only do something when we know the context is a
@@ -168,3 +176,6 @@ class HTMLJSONParser(HTMLParser):
 
     def get_json(self):
         return self.json
+
+    def get_base(self):
+        return self.base

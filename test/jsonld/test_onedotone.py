@@ -158,7 +158,6 @@ known_bugs: Tuple[str, ...] = (
     "html/e015-in",
     "html/e016-in",
     "html/e017-in",
-    "html/e020-in",
     "html/e021-in",
     "html/e022-in",
     "html/f001-in",
