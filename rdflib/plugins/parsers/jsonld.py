@@ -106,8 +106,8 @@ class JsonLDParser(rdflib.parser.Parser):
         generalized_rdf = kwargs.get("generalized_rdf", False)
 
         data, html_base = source_to_json(source)
-        if html_base:
-            base = html_base
+        if html_base is not None:
+            base = URIRef(html_base, base=base)
 
         # NOTE: A ConjunctiveGraph parses into a Graph sink, so no sink will be
         # context_aware. Keeping this check in case RDFLib is changed, or
