@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from os import chdir, environ, getcwd
 from os import path as p
 from typing import Tuple
@@ -158,7 +159,6 @@ known_bugs: Tuple[str, ...] = (
     "html/e015-in",
     "html/e016-in",
     "html/e017-in",
-    "html/e022-in",
     "html/f001-in",
     "html/f002-in",
     "html/f003-in",
@@ -263,7 +263,9 @@ def get_test_suite_cases():
                 func = runner.do_test_json
             else:  # toRdf
                 func = runner.do_test_parser
-        elif inputpath.endswith(".html"): # html
+        elif re.search(
+            r"\.html(#.*)?$", inputpath
+        ):  # html (with optional fragment identifier)
             func = runner.do_test_html
         else:  # fromRdf
             func = runner.do_test_serializer

@@ -105,7 +105,14 @@ class JsonLDParser(rdflib.parser.Parser):
 
         generalized_rdf = kwargs.get("generalized_rdf", False)
 
-        data, html_base = source_to_json(source)
+        system_id = source.getSystemId()
+
+        fragment_id = None
+        if system_id is not None and (index := system_id.find("#")) > -1:
+            # Get the optional fragment identifier
+            fragment_id = system_id[index + 1 :]
+
+        data, html_base = source_to_json(source, fragment_id)
         if html_base is not None:
             base = URIRef(html_base, base=base)
 

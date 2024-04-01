@@ -22,6 +22,9 @@ DEFAULT_PARSER_VERSION = 1.0
 
 def make_fake_urlinputsource(input_uri, format=None, suite_base=None, options={}):
     local_url = input_uri.replace("https://w3c.github.io/json-ld-api/tests/", "./")
+    if (index := local_url.find("#")) > -1:
+        # Strip off the optional fragment identifier
+        local_url = local_url[0:index]
     try:
         f = open(local_url, "rb")
     except FileNotFoundError:
@@ -182,7 +185,7 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
         input_uri, format="json-ld", suite_base=suite_base, options=options
     )
 
-    base = options.get('base') or input_src.getPublicId()
+    base = options.get("base") or input_src.getPublicId()
 
     p = JsonLDParser()
     p.parse(
@@ -214,8 +217,8 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
     expected_json = _prune_json(expected_json)
     result_json = _prune_json(result_json)
 
-    print(f'{expected_json=}')
-    print(f'{result_json=}')
+    print(f"{expected_json=}")
+    print(f"{result_json=}")
 
     _compare_json(expected_json, result_json)
 

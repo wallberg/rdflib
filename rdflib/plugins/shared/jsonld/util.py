@@ -32,8 +32,9 @@ from rdflib.parser import (
 def source_to_json(
     source: Optional[
         Union[IO[bytes], TextIO, InputSource, str, bytes, pathlib.PurePath]
-    ]
-) -> Optional[Tuple[Any, str]] :
+    ],
+    fragment_id: Optional[str] = None,
+) -> Optional[Tuple[Any, Any]]:
     if isinstance(source, PythonInputSource):
         return (source.data, None)
 
@@ -53,7 +54,7 @@ def source_to_json(
             use_stream = TextIOWrapper(stream, encoding="utf-8")
 
         if source.content_type in ("text/html", "application/xhtml+xml"):
-            parser = HTMLJSONParser()
+            parser = HTMLJSONParser(fragment_id=fragment_id)
             parser.feed(use_stream.read())
             return (parser.get_json(), parser.get_base())
         else:
@@ -136,37 +137,46 @@ __all__ = [
 
 
 class HTMLJSONParser(HTMLParser):
-    def __init__(self):
+    def __init__(self, fragment_id: Optional[str] = None):
         super().__init__()
-        self.json = []
+        self.fragment_id = fragment_id
+        self.json: List[Any] = []
         self.contains_json = False
+        self.fragment_id_does_not_match = False
         self.base = None
 
     def handle_starttag(self, tag, attrs):
         self.contains_json = False
+        self.fragment_id_does_not_match = False
 
         # Only set self. contains_json to True if the
         # type is 'application/ld+json'
         if tag == "script":
-            for (attr, value) in attrs:
-                if attr == 'type' and value == 'application/ld+json':
+            for attr, value in attrs:
+                if attr == "type" and value == "application/ld+json":
                     self.contains_json = True
+                elif (
+                    attr == "id"
+                    and self.fragment_id is not None
+                    and value != self.fragment_id
+                ):
+                    self.fragment_id_does_not_match = True
                 else:
                     # TODO: determine if this else is necessary
                     # Nothing to do
                     continue
 
         elif tag == "base":
-            for (attr, value) in attrs:
-                if attr == 'href':
+            for attr, value in attrs:
+                if attr == "href":
                     self.base = value
-                    print(f'{self.base=}')
+                    print(f"{self.base=}")
 
     def handle_data(self, data):
         # Only do something when we know the context is a
         # script element containing application/ld+json
 
-        if self.contains_json is True:
+        if self.contains_json is True and self.fragment_id_does_not_match is False:
             if data.strip() == "":
                 # skip empty data elements
                 return
