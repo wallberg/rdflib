@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import pathlib
-from typing import IO, TYPE_CHECKING, Any, Optional, TextIO, Tuple, Union
+from typing import IO, TYPE_CHECKING, Any, List, Optional, TextIO, Tuple, Union
 
 if TYPE_CHECKING:
     import json
@@ -34,7 +34,7 @@ def source_to_json(
         Union[IO[bytes], TextIO, InputSource, str, bytes, pathlib.PurePath]
     ],
     fragment_id: Optional[str] = None,
-) -> Optional[Tuple[Any, Any]]:
+) -> Tuple[Any, Any]:
     if isinstance(source, PythonInputSource):
         return (source.data, None)
 
