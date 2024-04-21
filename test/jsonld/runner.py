@@ -199,44 +199,53 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
         extract_all_scripts=extract_all_scripts,
     )
 
-    expected_json = _load_json(expectedpath)
-    use_native_types = True  # CONTEXT in input_obj
-    result_json = from_rdf(
-        input_graph,
-        context,
-        base="./",  # deliberately set base different to the input base
-        use_native_types=options.get("useNativeTypes", use_native_types),
-        use_rdf_type=options.get("useRdfType", False),
-    )
+    if expectedpath.endswith(".nq"):
+        expected_graph = _load_nquads(expectedpath)
 
-    def _prune_json(data):
-        if CONTEXT in data:
-            data.pop(CONTEXT)
-        if GRAPH in data:
-            data = data[GRAPH]
-        # def _remove_empty_sets(obj):
-        return data
+        assert isomorphic(input_graph, expected_graph), "Expected:\n%s\nGot:\n%s" % (
+            expected_graph.serialize(),
+            input_graph.serialize(),
+        )
 
-    expected_json = _prune_json(expected_json)
-    result_json = _prune_json(result_json)
+    elif expectedpath.endswith(".jsonld"):
+        expected_json = _load_json(expectedpath)
+        use_native_types = True  # CONTEXT in input_obj
+        result_json = from_rdf(
+            input_graph,
+            context,
+            base="./",  # deliberately set base different to the input base
+            use_native_types=options.get("useNativeTypes", use_native_types),
+            use_rdf_type=options.get("useRdfType", False),
+        )
 
-    def _flatten(data):
-        if isinstance(data, dict):
-            if ID in data and data[ID].startswith("_"):
-                data.pop(ID)
-        elif isinstance(data, list):
-            for elt in data:
-                _flatten(elt)
+        def _prune_json(data):
+            if CONTEXT in data:
+                data.pop(CONTEXT)
+            if GRAPH in data:
+                data = data[GRAPH]
+            # def _remove_empty_sets(obj):
+            return data
 
-    # fake flatten?
-    # TODO: determine if flatten is the correct, expected operation
-    # TODO: flatten correctly
-    _flatten(result_json)
+        expected_json = _prune_json(expected_json)
+        result_json = _prune_json(result_json)
 
-    print(f"{type(expected_json)=}, {expected_json=}")
-    print(f"{type(result_json)=}, {result_json=}")
+        def _flatten(data):
+            if isinstance(data, dict):
+                if ID in data and data[ID].startswith("_"):
+                    data.pop(ID)
+            elif isinstance(data, list):
+                for elt in data:
+                    _flatten(elt)
 
-    _compare_json(expected_json, result_json)
+        # fake flatten?
+        # TODO: determine if flatten is the correct, expected operation
+        # TODO: flatten correctly
+        _flatten(result_json)
+
+        print(f"{type(expected_json)=}, {expected_json=}")
+        print(f"{type(result_json)=}, {result_json=}")
+
+        _compare_json(expected_json, result_json)
 
 
 def _load_nquads(source):
