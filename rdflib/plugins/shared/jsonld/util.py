@@ -34,6 +34,7 @@ def source_to_json(
         Union[IO[bytes], TextIO, InputSource, str, bytes, pathlib.PurePath]
     ],
     fragment_id: Optional[str] = None,
+    extract_all_scripts: Optional[bool] = False,
 ) -> Tuple[Any, Any]:
     if isinstance(source, PythonInputSource):
         return (source.data, None)
@@ -54,7 +55,9 @@ def source_to_json(
             use_stream = TextIOWrapper(stream, encoding="utf-8")
 
         if source.content_type in ("text/html", "application/xhtml+xml"):
-            parser = HTMLJSONParser(fragment_id=fragment_id)
+            parser = HTMLJSONParser(
+                fragment_id=fragment_id, extract_all_scripts=extract_all_scripts
+            )
             parser.feed(use_stream.read())
             return (parser.get_json(), parser.get_base())
         else:
@@ -137,13 +140,19 @@ __all__ = [
 
 
 class HTMLJSONParser(HTMLParser):
-    def __init__(self, fragment_id: Optional[str] = None):
+    def __init__(
+        self,
+        fragment_id: Optional[str] = None,
+        extract_all_scripts: Optional[bool] = False,
+    ):
         super().__init__()
         self.fragment_id = fragment_id
         self.json: List[Any] = []
         self.contains_json = False
         self.fragment_id_does_not_match = False
         self.base = None
+        self.extract_all_scripts = extract_all_scripts
+        self.script_count = 0
 
     def handle_starttag(self, tag, attrs):
         self.contains_json = False
@@ -177,12 +186,18 @@ class HTMLJSONParser(HTMLParser):
         # script element containing application/ld+json
 
         if self.contains_json is True and self.fragment_id_does_not_match is False:
+
+            if not self.extract_all_scripts and self.script_count > 0:
+                return
+
             if data.strip() == "":
                 # skip empty data elements
                 return
 
             # Try to parse the json
             self.json.append(json.loads(data))
+
+            self.script_count += 1
 
     def get_json(self):
         return self.json

@@ -141,24 +141,9 @@ known_bugs: Tuple[str, ...] = (
     # TODO: we don't extract context or json-ld that's embedded in HTML
     "html/c001-in",
     "html/c002-in",
-    "html/c003-in",
     "html/c004-in",
-    "html/e001-in",
-    "html/e002-in",
-    "html/e003-in",
     "html/e004-in",
     "html/e005-in",
-    "html/e006-in",
-    "html/e008-in",
-    "html/e009-in",
-    "html/e010-in",
-    "html/e011-in",
-    "html/e012-in",
-    "html/e013-in",
-    "html/e014-in",
-    "html/e015-in",
-    "html/e016-in",
-    "html/e017-in",
     "html/f001-in",
     "html/f002-in",
     "html/f003-in",
@@ -250,6 +235,9 @@ def get_test_suite_cases():
         skiptests += known_bugs
 
     for cat, num, inputpath, expectedpath, context, options in read_manifest(skiptests):
+        # if num not in ('e001', 'e018'):
+        #     continue
+
         if options:
             if (
                 SKIP_1_0_TESTS
