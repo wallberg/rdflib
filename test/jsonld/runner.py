@@ -220,12 +220,18 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
     expected_json = _prune_json(expected_json)
     result_json = _prune_json(result_json)
 
+    def _flatten(data):
+        if isinstance(data, dict):
+            if ID in data and data[ID].startswith("_"):
+                data.pop(ID)
+        elif isinstance(data, list):
+            for elt in data:
+                _flatten(elt)
+
     # fake flatten?
     # TODO: determine if flatten is the correct, expected operation
     # TODO: flatten correctly
-    for doc in result_json:
-        if ID in doc and doc[ID].startswith("_"):
-            doc.pop(ID)
+    _flatten(result_json)
 
     print(f"{type(expected_json)=}, {expected_json=}")
     print(f"{type(result_json)=}, {result_json=}")
