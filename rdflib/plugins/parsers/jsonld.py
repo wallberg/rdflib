@@ -105,6 +105,9 @@ class JsonLDParser(rdflib.parser.Parser):
 
         generalized_rdf = kwargs.get("generalized_rdf", False)
 
+        # TODO: Determine the proper default value (currently set according to the tests)
+        extract_all_scripts = kwargs.get("extract_all_scripts") or False
+
         system_id = source.getSystemId()
 
         fragment_id = None
@@ -112,7 +115,7 @@ class JsonLDParser(rdflib.parser.Parser):
             # Get the optional fragment identifier
             fragment_id = system_id[index + 1 :]
 
-        data, html_base = source_to_json(source, fragment_id)
+        data, html_base = source_to_json(source, fragment_id, extract_all_scripts)
         if html_base is not None:
             base = URIRef(html_base, base=base)
 
