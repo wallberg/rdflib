@@ -141,12 +141,10 @@ known_bugs: Tuple[str, ...] = (
     # TODO: we don't extract context or json-ld that's embedded in HTML
     "html/c004-in",
     "html/e004-in",
-    "html/e005-in",
     "html/f001-in",
     "html/f002-in",
     "html/f003-in",
     "html/f004-in",
-    "html/r005-in",
     "remote-doc/0013-in",
     "remote-doc/la01-in",
     "remote-doc/la02-in",

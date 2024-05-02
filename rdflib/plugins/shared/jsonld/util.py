@@ -195,7 +195,13 @@ class HTMLJSONParser(HTMLParser):
                 return
 
             # Try to parse the json
-            self.json.append(json.loads(data))
+            parsed = json.loads(data)
+
+            if isinstance(parsed, list):
+                for elt in parsed:
+                    self.json.append(elt)
+            else:
+                self.json.append(parsed)
 
             self.script_count += 1
 
