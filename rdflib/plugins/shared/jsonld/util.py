@@ -170,10 +170,6 @@ class HTMLJSONParser(HTMLParser):
                     and value != self.fragment_id
                 ):
                     self.fragment_id_does_not_match = True
-                else:
-                    # TODO: determine if this else is necessary
-                    # Nothing to do
-                    continue
 
         elif tag == "base":
             for attr, value in attrs:
