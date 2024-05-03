@@ -138,14 +138,8 @@ known_bugs: Tuple[str, ...] = (
     "toRdf/tn02-in",
     # TODO: Rdflib should silently reject bad predicate URIs
     "toRdf/wf02-in",
-    # TODO: we don't extract context or json-ld that's embedded in HTML
-    "html/f001-in",
-    "html/f002-in",
-    "html/f003-in",
+    # TODO: Determine why f004 expects to process all scripts
     "html/f004-in",
-    # TODO: understand nested @graph semantics and normalization
-    "html/c004-in",
-    "html/e004-in",
     "remote-doc/0013-in",
     "remote-doc/la01-in",
     "remote-doc/la02-in",

@@ -8,7 +8,7 @@ from rdflib.plugins.parsers.jsonld import JsonLDParser, to_rdf
 # monkey-patch N-Quads parser via it's underlying W3CNTriplesParser to keep source bnode id:s ..
 from rdflib.plugins.parsers.ntriples import W3CNTriplesParser, r_nodeid
 from rdflib.plugins.serializers.jsonld import from_rdf
-from rdflib.plugins.shared.jsonld.keys import CONTEXT, GRAPH, ID
+from rdflib.plugins.shared.jsonld.keys import CONTEXT, GRAPH
 
 
 def _preserving_nodeid(self, bnode_context=None):
@@ -202,50 +202,16 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
     if expectedpath.endswith(".nq"):
         expected_graph = _load_nquads(expectedpath)
 
-        assert isomorphic(input_graph, expected_graph), "Expected:\n%s\nGot:\n%s" % (
-            expected_graph.serialize(),
-            input_graph.serialize(),
-        )
-
     elif expectedpath.endswith(".jsonld"):
-        expected_json = _load_json(expectedpath)
-        use_native_types = True  # CONTEXT in input_obj
-        result_json = from_rdf(
-            input_graph,
-            context,
-            base="./",  # deliberately set base different to the input base
-            use_native_types=options.get("useNativeTypes", use_native_types),
-            use_rdf_type=options.get("useRdfType", False),
-        )
+        expected_graph = ConjunctiveGraph()
+        with open(expectedpath) as f:
+            data = f.read()
+        expected_graph.parse(data=data, format="json-ld")
 
-        def _prune_json(data):
-            if CONTEXT in data:
-                data.pop(CONTEXT)
-            if GRAPH in data:
-                data = data[GRAPH]
-            # def _remove_empty_sets(obj):
-            return data
-
-        expected_json = _prune_json(expected_json)
-        result_json = _prune_json(result_json)
-
-        def _flatten(data):
-            if isinstance(data, dict):
-                if ID in data and data[ID].startswith("_"):
-                    data.pop(ID)
-            elif isinstance(data, list):
-                for elt in data:
-                    _flatten(elt)
-
-        # fake flatten?
-        # TODO: determine if flatten is the correct, expected operation
-        # TODO: flatten correctly
-        _flatten(result_json)
-
-        print(f"{type(expected_json)=}, {expected_json=}")
-        print(f"{type(result_json)=}, {result_json=}")
-
-        _compare_json(expected_json, result_json)
+    assert isomorphic(input_graph, expected_graph), "Expected:\n%s\nGot:\n%s" % (
+        expected_graph.serialize(),
+        input_graph.serialize(),
+    )
 
 
 def _load_nquads(source):
