@@ -197,9 +197,9 @@ class HTMLJSONParser(HTMLParser):
             # Try to parse the json
             parsed = json.loads(data)
 
+            # Add to the result document
             if isinstance(parsed, list):
-                for elt in parsed:
-                    self.json.append(elt)
+                self.json.extend(parsed)
             else:
                 self.json.append(parsed)
 
