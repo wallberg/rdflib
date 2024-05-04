@@ -186,8 +186,8 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
     )
 
     # Get test options from the manifest
-    base = options.get("base") or input_src.getPublicId()
-    extract_all_scripts = options.get("extractAllScripts")
+    base = options.get("base", input_src.getPublicId())
+    extract_all_scripts = options.get("extractAllScripts", False)
 
     p = JsonLDParser()
     p.parse(
@@ -207,6 +207,14 @@ def do_test_html(suite_base, cat, num, inputpath, expectedpath, context, options
         with open(expectedpath) as f:
             data = f.read()
         expected_graph.parse(data=data, format="json-ld")
+
+    # TODO: Change test from graph comparison to json comparison
+
+    # The html test cases combine testing for JSON-LD extraction from the HTML
+    # along with testing for other algorithms (compact/flatten), which we do
+    # not currently support. In order to test extraction only, we currently
+    # perform a graph comparison. Consider changing this to a json comparison
+    # once the processing algorithms are implemented.
 
     assert isomorphic(input_graph, expected_graph), "Expected:\n%s\nGot:\n%s" % (
         expected_graph.serialize(),

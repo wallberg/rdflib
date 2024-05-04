@@ -138,7 +138,7 @@ known_bugs: Tuple[str, ...] = (
     "toRdf/tn02-in",
     # TODO: Rdflib should silently reject bad predicate URIs
     "toRdf/wf02-in",
-    # TODO: Determine why f004 expects to process all scripts
+    # TODO: Determine why f004 expects to extract all scripts
     "html/f004-in",
     "remote-doc/0013-in",
     "remote-doc/la01-in",
@@ -207,8 +207,6 @@ def get_test_suite_cases():
         skiptests += known_bugs
 
     for cat, num, inputpath, expectedpath, context, options in read_manifest(skiptests):
-        # if num not in ('e001', 'e018'):
-        #     continue
 
         if options:
             if (
