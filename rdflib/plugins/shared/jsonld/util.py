@@ -190,7 +190,6 @@ class HTMLJSONParser(HTMLParser):
             for attr, value in attrs:
                 if attr == "href":
                     self.base = value
-                    print(f"{self.base=}")
 
     def handle_data(self, data):
         # Only do something when we know the context is a
