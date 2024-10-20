@@ -11,7 +11,7 @@ from typing import Any, Mapping, Optional, Union
 
 from rdflib.graph import Graph
 from rdflib.plugins.sparql.algebra import translateQuery, translateUpdate
-from rdflib.plugins.sparql.evaluate import evalQuery
+from rdflib.plugins.sparql.evaluate import eval_query
 from rdflib.plugins.sparql.parser import parse_query, parse_update
 from rdflib.plugins.sparql.sparql import Query, Update
 from rdflib.plugins.sparql.update import eval_update
@@ -144,4 +144,4 @@ class SPARQLProcessor(Processor):
         if isinstance(str_or_query, str):
             str_or_query = translateQuery(parse_query(str_or_query), base, init_ns)
 
-        return evalQuery(self.graph, str_or_query, init_bindings, base)
+        return eval_query(self.graph, str_or_query, init_bindings, base)

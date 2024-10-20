@@ -20,7 +20,7 @@ from pathlib import Path
 
 import rdflib
 from rdflib.namespace import FOAF, RDF, RDFS
-from rdflib.plugins.sparql.evaluate import evalBGP
+from rdflib.plugins.sparql.evaluate import eval_bgp
 
 EXAMPLES_DIR = Path(__file__).parent
 
@@ -47,7 +47,7 @@ def customEval(ctx, part):  # noqa: N802
                 triples.append(t)
 
         # delegate to normal evalBGP
-        return evalBGP(ctx, triples)
+        return eval_bgp(ctx, triples)
 
     raise NotImplementedError()
 

@@ -14,7 +14,7 @@ from rdflib.compare import isomorphic
 from rdflib.namespace import RDF, RDFS, Namespace
 from rdflib.plugins.sparql import prepare_query, sparql
 from rdflib.plugins.sparql.algebra import translateQuery
-from rdflib.plugins.sparql.evaluate import evalPart
+from rdflib.plugins.sparql.evaluate import eval_part
 from rdflib.plugins.sparql.evalutils import _eval
 from rdflib.plugins.sparql.parser import expand_unicode_escapes, parse_query
 from rdflib.plugins.sparql.parserutils import prettify_parsetree
@@ -351,7 +351,7 @@ def test_custom_eval() -> None:
     custom_function_result = EGDC["result"]
 
     def custom_eval_extended(ctx: Any, extend: Any) -> Any:
-        for c in evalPart(ctx, extend.p):
+        for c in eval_part(ctx, extend.p):
             try:
                 if (
                     hasattr(extend.expr, "iri")
@@ -422,7 +422,7 @@ def test_custom_eval_exception(
     custom_function_uri = EGDC["function"]
 
     def custom_eval_extended(ctx: Any, extend: Any) -> Any:
-        for c in evalPart(ctx, extend.p):
+        for c in eval_part(ctx, extend.p):
             try:
                 if (
                     hasattr(extend.expr, "iri")

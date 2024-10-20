@@ -1,13 +1,13 @@
 from typing import Any
 
 from rdflib import Namespace
-from rdflib.plugins.sparql.evaluate import evalPart
+from rdflib.plugins.sparql.evaluate import eval_part
 from rdflib.plugins.sparql.evalutils import _eval
 from rdflib.plugins.sparql.sparql import SPARQLError
 
 
 def custom_eval_extended(ctx: Any, extend: Any) -> Any:
-    for c in evalPart(ctx, extend.p):
+    for c in eval_part(ctx, extend.p):
         try:
             if hasattr(extend.expr, "iri") and extend.expr.iri == function_uri:
                 evaluation = function_result

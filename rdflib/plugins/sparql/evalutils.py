@@ -146,7 +146,7 @@ def _filter(
             yield c
 
 
-def _fillTemplate(
+def _fill_template(
     template: Iterable[Tuple[Identifier, Identifier, Identifier]],
     solution: _ContextType,
 ) -> Generator[Tuple[Identifier, Identifier, Identifier], None, None]:
@@ -156,7 +156,7 @@ def _fillTemplate(
     Fill a triple template with instantiated variables
     """
 
-    bnodeMap: DefaultDict[BNode, BNode] = collections.defaultdict(BNode)
+    bnode_map: DefaultDict[BNode, BNode] = collections.defaultdict(BNode)
     for t in template:
         s, p, o = t
 
@@ -166,7 +166,7 @@ def _fillTemplate(
 
         # instantiate new bnodes for each solution
         _s, _p, _o = [
-            bnodeMap[x] if isinstance(x, BNode) else y for x, y in zip(t, (_s, _p, _o))
+            bnode_map[x] if isinstance(x, BNode) else y for x, y in zip(t, (_s, _p, _o))
         ]
 
         if _s is not None and _p is not None and _o is not None:

@@ -49,7 +49,7 @@ from rdflib.term import (
 from rdflib.xsd_datetime import Duration, parse_datetime  # type: ignore[attr-defined]
 
 
-def Builtin_IRI(expr: Expr, ctx: FrozenBindings) -> URIRef:
+def builtin_iri(expr: Expr, ctx: FrozenBindings) -> URIRef:
     """
     http://www.w3.org/TR/sparql11-query/#func-iri
     """
@@ -66,19 +66,19 @@ def Builtin_IRI(expr: Expr, ctx: FrozenBindings) -> URIRef:
     raise SPARQLError("IRI function only accepts URIRefs or Literals/Strings!")
 
 
-def Builtin_isBLANK(expr: Expr, ctx: FrozenBindings) -> Literal:
+def builtin_is_blank(expr: Expr, ctx: FrozenBindings) -> Literal:
     return Literal(isinstance(expr.arg, BNode))
 
 
-def Builtin_isLITERAL(expr, ctx) -> Literal:
+def builtin_is_literal(expr, ctx) -> Literal:
     return Literal(isinstance(expr.arg, Literal))
 
 
-def Builtin_isIRI(expr, ctx) -> Literal:
+def builtin_is_iri(expr, ctx) -> Literal:
     return Literal(isinstance(expr.arg, URIRef))
 
 
-def Builtin_isNUMERIC(expr, ctx) -> Literal:
+def builtin_is_numeric(expr, ctx) -> Literal:
     try:
         numeric(expr.arg)
         return Literal(True)
@@ -86,7 +86,7 @@ def Builtin_isNUMERIC(expr, ctx) -> Literal:
         return Literal(False)
 
 
-def Builtin_BNODE(expr, ctx) -> BNode:
+def builtin_bnode(expr, ctx) -> BNode:
     """
     http://www.w3.org/TR/sparql11-query/#func-bnode
     """
@@ -102,7 +102,7 @@ def Builtin_BNODE(expr, ctx) -> BNode:
     raise SPARQLError("BNode function only accepts no argument or literal/string")
 
 
-def Builtin_ABS(expr: Expr, ctx) -> Literal:
+def builtin_abs(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-abs
     """
@@ -110,7 +110,7 @@ def Builtin_ABS(expr: Expr, ctx) -> Literal:
     return Literal(abs(numeric(expr.arg)))
 
 
-def Builtin_IF(expr: Expr, ctx):
+def builtin_if(expr: Expr, ctx):
     """
     http://www.w3.org/TR/sparql11-query/#func-if
     """
@@ -118,7 +118,7 @@ def Builtin_IF(expr: Expr, ctx):
     return expr.arg2 if ebv(expr.arg1) else expr.arg3
 
 
-def Builtin_RAND(expr: Expr, ctx) -> Literal:
+def builtin_rand(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#idp2133952
     """
@@ -126,7 +126,7 @@ def Builtin_RAND(expr: Expr, ctx) -> Literal:
     return Literal(random.random())
 
 
-def Builtin_UUID(expr: Expr, ctx) -> URIRef:
+def builtin_uuid(expr: Expr, ctx) -> URIRef:
     """
     http://www.w3.org/TR/sparql11-query/#func-strdt
     """
@@ -134,7 +134,7 @@ def Builtin_UUID(expr: Expr, ctx) -> URIRef:
     return URIRef(uuid.uuid4().urn)
 
 
-def Builtin_STRUUID(expr, ctx) -> Literal:
+def builtin_struuid(expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-strdt
     """
@@ -142,32 +142,32 @@ def Builtin_STRUUID(expr, ctx) -> Literal:
     return Literal(str(uuid.uuid4()))
 
 
-def Builtin_MD5(expr: Expr, ctx) -> Literal:
+def builtin_md5(expr: Expr, ctx) -> Literal:
     s = string(expr.arg).encode("utf-8")
     return Literal(hashlib.md5(s).hexdigest())
 
 
-def Builtin_SHA1(expr: Expr, ctx) -> Literal:
+def builtin_sha1(expr: Expr, ctx) -> Literal:
     s = string(expr.arg).encode("utf-8")
     return Literal(hashlib.sha1(s).hexdigest())
 
 
-def Builtin_SHA256(expr: Expr, ctx) -> Literal:
+def builtin_sha256(expr: Expr, ctx) -> Literal:
     s = string(expr.arg).encode("utf-8")
     return Literal(hashlib.sha256(s).hexdigest())
 
 
-def Builtin_SHA384(expr: Expr, ctx) -> Literal:
+def builtin_sha384(expr: Expr, ctx) -> Literal:
     s = string(expr.arg).encode("utf-8")
     return Literal(hashlib.sha384(s).hexdigest())
 
 
-def Builtin_SHA512(expr: Expr, ctx) -> Literal:
+def builtin_sha512(expr: Expr, ctx) -> Literal:
     s = string(expr.arg).encode("utf-8")
     return Literal(hashlib.sha512(s).hexdigest())
 
 
-def Builtin_COALESCE(expr: Expr, ctx):
+def builtin_coalesce(expr: Expr, ctx):
     """
     http://www.w3.org/TR/sparql11-query/#func-coalesce
     """
@@ -177,7 +177,7 @@ def Builtin_COALESCE(expr: Expr, ctx):
     raise SPARQLError("COALESCE got no arguments that did not evaluate to an error")
 
 
-def Builtin_CEIL(expr: Expr, ctx) -> Literal:
+def builtin_ceil(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-ceil
     """
@@ -186,7 +186,7 @@ def Builtin_CEIL(expr: Expr, ctx) -> Literal:
     return Literal(int(math.ceil(numeric(l_))), datatype=l_.datatype)
 
 
-def Builtin_FLOOR(expr: Expr, ctx) -> Literal:
+def builtin_floor(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-floor
     """
@@ -194,7 +194,7 @@ def Builtin_FLOOR(expr: Expr, ctx) -> Literal:
     return Literal(int(math.floor(numeric(l_))), datatype=l_.datatype)
 
 
-def Builtin_ROUND(expr: Expr, ctx) -> Literal:
+def builtin_round(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-round
     """
@@ -209,7 +209,7 @@ def Builtin_ROUND(expr: Expr, ctx) -> Literal:
     return Literal(v, datatype=l_.datatype)
 
 
-def Builtin_REGEX(expr: Expr, ctx) -> Literal:
+def builtin_regex(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-regex
     Invokes the XPath fn:matches function to match text against a regular
@@ -222,17 +222,17 @@ def Builtin_REGEX(expr: Expr, ctx) -> Literal:
     pattern = string(expr.pattern)
     flags = expr.flags
 
-    cFlag = 0
+    c_flag = 0
     if flags:
         # Maps XPath REGEX flags (http://www.w3.org/TR/xpath-functions/#flags)
         # to Python's re flags
-        flagMap = dict([("i", re.IGNORECASE), ("s", re.DOTALL), ("m", re.MULTILINE)])
-        cFlag = reduce(pyop.or_, [flagMap.get(f, 0) for f in flags])
+        flag_map = dict([("i", re.IGNORECASE), ("s", re.DOTALL), ("m", re.MULTILINE)])
+        c_flag = reduce(pyop.or_, [flag_map.get(f, 0) for f in flags])
 
-    return Literal(bool(re.search(str(pattern), text, cFlag)))
+    return Literal(bool(re.search(str(pattern), text, c_flag)))
 
 
-def Builtin_REPLACE(expr: Expr, ctx) -> Literal:
+def builtin_replace(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-substr
     """
@@ -245,23 +245,23 @@ def Builtin_REPLACE(expr: Expr, ctx) -> Literal:
     # type error: Incompatible types in assignment (expression has type "str", variable has type "Literal")
     replacement = re.sub("\\$([0-9]*)", r"\\\1", replacement)  # type: ignore[assignment]
 
-    cFlag = 0
+    c_flag = 0
     if flags:
         # Maps XPath REGEX flags (http://www.w3.org/TR/xpath-functions/#flags)
         # to Python's re flags
-        flagMap = dict([("i", re.IGNORECASE), ("s", re.DOTALL), ("m", re.MULTILINE)])
-        cFlag = reduce(pyop.or_, [flagMap.get(f, 0) for f in flags])
+        flag_map = dict([("i", re.IGNORECASE), ("s", re.DOTALL), ("m", re.MULTILINE)])
+        c_flag = reduce(pyop.or_, [flag_map.get(f, 0) for f in flags])
 
         # @@FIXME@@ either datatype OR lang, NOT both
 
     return Literal(
-        re.sub(str(pattern), replacement, text, cFlag),
+        re.sub(str(pattern), replacement, text, c_flag),
         datatype=text.datatype,
         lang=text.language,
     )
 
 
-def Builtin_STRDT(expr: Expr, ctx) -> Literal:
+def builtin_strdt(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-strdt
     """
@@ -269,7 +269,7 @@ def Builtin_STRDT(expr: Expr, ctx) -> Literal:
     return Literal(str(expr.arg1), datatype=expr.arg2)
 
 
-def Builtin_STRLANG(expr: Expr, ctx) -> Literal:
+def builtin_strlang(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-strlang
     """
@@ -283,7 +283,7 @@ def Builtin_STRLANG(expr: Expr, ctx) -> Literal:
     return Literal(str(s), lang=str(expr.arg2).lower())
 
 
-def Builtin_CONCAT(expr: Expr, ctx) -> Literal:
+def builtin_concat(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-concat
     """
@@ -304,7 +304,7 @@ def Builtin_CONCAT(expr: Expr, ctx) -> Literal:
     return Literal("".join(string(x) for x in expr.arg), datatype=dt, lang=lang)  # type: ignore[arg-type]
 
 
-def _compatibleStrings(a: Literal, b: Literal) -> None:
+def _compatible_strings(a: Literal, b: Literal) -> None:
     string(a)
     string(b)
 
@@ -312,38 +312,38 @@ def _compatibleStrings(a: Literal, b: Literal) -> None:
         raise SPARQLError("incompatible arguments to str functions")
 
 
-def Builtin_STRSTARTS(expr: Expr, ctx) -> Literal:
+def builtin_strstarts(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-strstarts
     """
 
     a = expr.arg1
     b = expr.arg2
-    _compatibleStrings(a, b)
+    _compatible_strings(a, b)
 
     return Literal(a.startswith(b))
 
 
-def Builtin_STRENDS(expr: Expr, ctx) -> Literal:
+def builtin_strends(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-strends
     """
     a = expr.arg1
     b = expr.arg2
 
-    _compatibleStrings(a, b)
+    _compatible_strings(a, b)
 
     return Literal(a.endswith(b))
 
 
-def Builtin_STRBEFORE(expr: Expr, ctx) -> Literal:
+def builtin_strbefore(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-strbefore
     """
 
     a = expr.arg1
     b = expr.arg2
-    _compatibleStrings(a, b)
+    _compatible_strings(a, b)
 
     i = a.find(b)
     if i == -1:
@@ -352,14 +352,14 @@ def Builtin_STRBEFORE(expr: Expr, ctx) -> Literal:
         return Literal(a[:i], lang=a.language, datatype=a.datatype)
 
 
-def Builtin_STRAFTER(expr: Expr, ctx) -> Literal:
+def builtin_strafter(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-strafter
     """
 
     a = expr.arg1
     b = expr.arg2
-    _compatibleStrings(a, b)
+    _compatible_strings(a, b)
 
     i = a.find(b)
     if i == -1:
@@ -368,23 +368,23 @@ def Builtin_STRAFTER(expr: Expr, ctx) -> Literal:
         return Literal(a[i + len(b) :], lang=a.language, datatype=a.datatype)
 
 
-def Builtin_CONTAINS(expr: Expr, ctx) -> Literal:
+def builtin_contains(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-strcontains
     """
 
     a = expr.arg1
     b = expr.arg2
-    _compatibleStrings(a, b)
+    _compatible_strings(a, b)
 
     return Literal(b in a)
 
 
-def Builtin_ENCODE_FOR_URI(expr: Expr, ctx) -> Literal:
+def builtin_encode_for_uri(expr: Expr, ctx) -> Literal:
     return Literal(quote(string(expr.arg).encode("utf-8"), safe=""))
 
 
-def Builtin_SUBSTR(expr: Expr, ctx) -> Literal:
+def builtin_substr(expr: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-substr
     """
@@ -400,73 +400,73 @@ def Builtin_SUBSTR(expr: Expr, ctx) -> Literal:
     return Literal(a[start:length], lang=a.language, datatype=a.datatype)
 
 
-def Builtin_STRLEN(e: Expr, ctx) -> Literal:
+def builtin_strlen(e: Expr, ctx) -> Literal:
     l_ = string(e.arg)
 
     return Literal(len(l_))
 
 
-def Builtin_STR(e: Expr, ctx) -> Literal:
+def builtin_str(e: Expr, ctx) -> Literal:
     arg = e.arg
     if isinstance(arg, SPARQLError):
         raise arg
     return Literal(str(arg))  # plain literal
 
 
-def Builtin_LCASE(e: Expr, ctx) -> Literal:
+def builtin_lcase(e: Expr, ctx) -> Literal:
     l_ = string(e.arg)
 
     return Literal(l_.lower(), datatype=l_.datatype, lang=l_.language)
 
 
-def Builtin_LANGMATCHES(e: Expr, ctx) -> Literal:
+def builtin_langmatches(e: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-langMatches
 
 
     """
-    langTag = string(e.arg1)
-    langRange = string(e.arg2)
+    lang_tag = string(e.arg1)
+    lang_range = string(e.arg2)
 
-    if str(langTag) == "":
+    if str(lang_tag) == "":
         return Literal(False)  # nothing matches empty!
 
-    return Literal(_lang_range_check(langRange, langTag))
+    return Literal(_lang_range_check(lang_range, lang_tag))
 
 
-def Builtin_NOW(e: Expr, ctx) -> Literal:
+def builtin_now(e: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-now
     """
     return Literal(ctx.now)
 
 
-def Builtin_YEAR(e: Expr, ctx) -> Literal:
+def builtin_year(e: Expr, ctx) -> Literal:
     d = date(e.arg)
     return Literal(d.year)
 
 
-def Builtin_MONTH(e: Expr, ctx) -> Literal:
+def builtin_month(e: Expr, ctx) -> Literal:
     d = date(e.arg)
     return Literal(d.month)
 
 
-def Builtin_DAY(e: Expr, ctx) -> Literal:
+def builtin_day(e: Expr, ctx) -> Literal:
     d = date(e.arg)
     return Literal(d.day)
 
 
-def Builtin_HOURS(e: Expr, ctx) -> Literal:
+def builtin_hours(e: Expr, ctx) -> Literal:
     d = datetime(e.arg)
     return Literal(d.hour)
 
 
-def Builtin_MINUTES(e: Expr, ctx) -> Literal:
+def builtin_minutes(e: Expr, ctx) -> Literal:
     d = datetime(e.arg)
     return Literal(d.minute)
 
 
-def Builtin_SECONDS(e: Expr, ctx) -> Literal:
+def builtin_seconds(e: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-seconds
     """
@@ -477,7 +477,7 @@ def Builtin_SECONDS(e: Expr, ctx) -> Literal:
     return Literal(result_value, datatype=XSD.decimal)
 
 
-def Builtin_TIMEZONE(e: Expr, ctx) -> Literal:
+def builtin_timezone(e: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-timezone
 
@@ -516,7 +516,7 @@ def Builtin_TIMEZONE(e: Expr, ctx) -> Literal:
     return Literal(tzdelta, datatype=XSD.dayTimeDuration)
 
 
-def Builtin_TZ(e: Expr, ctx) -> Literal:
+def builtin_tz(e: Expr, ctx) -> Literal:
     d = datetime(e.arg)
     if not d.tzinfo:
         return Literal("")
@@ -531,13 +531,13 @@ def Builtin_TZ(e: Expr, ctx) -> Literal:
     return Literal(n)
 
 
-def Builtin_UCASE(e: Expr, ctx) -> Literal:
+def builtin_ucase(e: Expr, ctx) -> Literal:
     l_ = string(e.arg)
 
     return Literal(l_.upper(), datatype=l_.datatype, lang=l_.language)
 
 
-def Builtin_LANG(e: Expr, ctx) -> Literal:
+def builtin_lang(e: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-lang
 
@@ -550,7 +550,7 @@ def Builtin_LANG(e: Expr, ctx) -> Literal:
     return Literal(l_.language or "")
 
 
-def Builtin_DATATYPE(e: Expr, ctx) -> Optional[str]:
+def builtin_datatype(e: Expr, ctx) -> Optional[str]:
     l_ = e.arg
     if not isinstance(l_, Literal):
         raise SPARQLError("Can only get datatype of literal: %r" % l_)
@@ -561,13 +561,13 @@ def Builtin_DATATYPE(e: Expr, ctx) -> Optional[str]:
     return l_.datatype
 
 
-def Builtin_sameTerm(e: Expr, ctx) -> Literal:
+def builtin_sameterm(e: Expr, ctx) -> Literal:
     a = e.arg1
     b = e.arg2
     return Literal(a == b)
 
 
-def Builtin_BOUND(e: Expr, ctx) -> Literal:
+def builtin_bound(e: Expr, ctx) -> Literal:
     """
     http://www.w3.org/TR/sparql11-query/#func-bound
     """
@@ -576,16 +576,16 @@ def Builtin_BOUND(e: Expr, ctx) -> Literal:
     return Literal(not isinstance(n, Variable))
 
 
-def Builtin_EXISTS(e: Expr, ctx: FrozenBindings) -> Literal:
+def builtin_exists(e: Expr, ctx: FrozenBindings) -> Literal:
     # damn...
-    from rdflib.plugins.sparql.evaluate import evalPart
+    from rdflib.plugins.sparql.evaluate import eval_part
 
     exists = e.name == "Builtin_EXISTS"
 
     # type error: Incompatible types in assignment (expression has type "QueryContext", variable has type "FrozenBindings")
     ctx = ctx.ctx.thaw(ctx)  # type: ignore[assignment] # hmm
     # type error: Argument 1 to "evalPart" has incompatible type "FrozenBindings"; expected "QueryContext"
-    for x in evalPart(ctx, e.graph):  # type: ignore[arg-type]
+    for x in eval_part(ctx, e.graph):  # type: ignore[arg-type]
         return Literal(exists)
     return Literal(not exists)
 
@@ -640,7 +640,7 @@ def unregister_custom_function(
         warnings.warn("This function is not registered as %s" % uri.n3())
 
 
-def Function(e: Expr, ctx: FrozenBindings) -> Node:
+def function(e: Expr, ctx: FrozenBindings) -> Node:
     """
     Custom functions and casts
     """
@@ -731,19 +731,19 @@ def default_cast(e: Expr, ctx: FrozenBindings) -> Literal:  # type: ignore[retur
         raise SPARQLError("Cannot interpret '%r' as bool" % x)
 
 
-def UnaryNot(expr: Expr, ctx: FrozenBindings) -> Literal:
+def unary_not(expr: Expr, ctx: FrozenBindings) -> Literal:
     return Literal(not ebv(expr.expr))
 
 
-def UnaryMinus(expr: Expr, ctx: FrozenBindings) -> Literal:
+def unary_minus(expr: Expr, ctx: FrozenBindings) -> Literal:
     return Literal(-numeric(expr.expr))
 
 
-def UnaryPlus(expr: Expr, ctx: FrozenBindings) -> Literal:
+def unary_plus(expr: Expr, ctx: FrozenBindings) -> Literal:
     return Literal(+numeric(expr.expr))
 
 
-def MultiplicativeExpression(
+def multiplicative_expression(
     e: Expr, ctx: Union[QueryContext, FrozenBindings]
 ) -> Literal:
     expr = e.expr
@@ -773,7 +773,7 @@ def MultiplicativeExpression(
 
 
 # type error: Missing return statement
-def AdditiveExpression(e: Expr, ctx: Union[QueryContext, FrozenBindings]) -> Literal:  # type: ignore[return]
+def additive_expression(e: Expr, ctx: Union[QueryContext, FrozenBindings]) -> Literal:  # type: ignore[return]
     expr = e.expr
     other = e.other
 
@@ -969,7 +969,7 @@ def conditional_or_xpression(
 
 
 def not_(arg) -> Expr:
-    return Expr("UnaryNot", UnaryNot, expr=arg)
+    return Expr("UnaryNot", unary_not, expr=arg)
 
 
 def and_(*args: Expr) -> Expr:

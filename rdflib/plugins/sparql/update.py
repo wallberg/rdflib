@@ -9,8 +9,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterator, Mapping, Optional, Sequence
 
 from rdflib.graph import Graph
-from rdflib.plugins.sparql.evaluate import evalBGP, evalPart
-from rdflib.plugins.sparql.evalutils import _fillTemplate, _join
+from rdflib.plugins.sparql.evaluate import eval_bgp, eval_part
+from rdflib.plugins.sparql.evalutils import _fill_template, _join
 from rdflib.plugins.sparql.parserutils import CompValue
 from rdflib.plugins.sparql.sparql import FrozenDict, QueryContext, Update
 from rdflib.term import Identifier, URIRef, Variable
@@ -122,20 +122,20 @@ def eval_delete_where(ctx: QueryContext, u: CompValue) -> None:
     http://www.w3.org/TR/sparql11-update/#deleteWhere
     """
 
-    res: Iterator[FrozenDict] = evalBGP(ctx, u.triples)
+    res: Iterator[FrozenDict] = eval_bgp(ctx, u.triples)
     for g in u.quads:
         cg = ctx.dataset.get_context(g)
         c = ctx.push_graph(cg)
-        res = _join(res, list(evalBGP(c, u.quads[g])))
+        res = _join(res, list(eval_bgp(c, u.quads[g])))
 
     # type error: Incompatible types in assignment (expression has type "FrozenBindings", variable has type "QueryContext")
     for c in res:  # type: ignore[assignment]
         g = ctx.graph
-        g -= _fillTemplate(u.triples, c)
+        g -= _fill_template(u.triples, c)
 
         for g in u.quads:
             cg = ctx.dataset.get_context(c.get(g))
-            cg -= _fillTemplate(u.quads[g], c)
+            cg -= _fill_template(u.quads[g], c)
 
 
 def eval_modify(ctx: QueryContext, u: CompValue) -> None:
@@ -172,7 +172,7 @@ def eval_modify(ctx: QueryContext, u: CompValue) -> None:
         g = ctx.dataset.get_context(u.withClause)
         ctx = ctx.push_graph(g)
 
-    res = evalPart(ctx, u.where)
+    res = eval_part(ctx, u.where)
 
     if u.using:
         if other_default:
@@ -186,20 +186,20 @@ def eval_modify(ctx: QueryContext, u: CompValue) -> None:
         if u.delete:
             # type error: Unsupported left operand type for - ("None")
             # type error: Unsupported operand types for - ("Graph" and "Generator[Tuple[Identifier, Identifier, Identifier], None, None]")
-            dg -= _fillTemplate(u.delete.triples, c)  # type: ignore[operator]
+            dg -= _fill_template(u.delete.triples, c)  # type: ignore[operator]
 
             for g, q in u.delete.quads.items():
                 cg = ctx.dataset.get_context(c.get(g))
-                cg -= _fillTemplate(q, c)
+                cg -= _fill_template(q, c)
 
         if u.insert:
             # type error: Unsupported left operand type for + ("None")
             # type error: Unsupported operand types for + ("Graph" and "Generator[Tuple[Identifier, Identifier, Identifier], None, None]")
-            dg += _fillTemplate(u.insert.triples, c)  # type: ignore[operator]
+            dg += _fill_template(u.insert.triples, c)  # type: ignore[operator]
 
             for g, q in u.insert.quads.items():
                 cg = ctx.dataset.get_context(c.get(g))
-                cg += _fillTemplate(q, c)
+                cg += _fill_template(q, c)
 
 
 def eval_add(ctx: QueryContext, u: CompValue) -> None:

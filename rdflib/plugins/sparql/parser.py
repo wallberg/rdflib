@@ -663,7 +663,7 @@ RegexExpression = Comp(
     + Optional("," + Param("flags", Expression))
     + ")",
 )
-RegexExpression.set_eval_fn(op.Builtin_REGEX)
+RegexExpression.set_eval_fn(op.builtin_regex)
 
 # [123] SubstringExpression ::= 'SUBSTR' '(' Expression ',' Expression ( ',' Expression )? ')'
 SubstringExpression = Comp(
@@ -675,7 +675,7 @@ SubstringExpression = Comp(
     + Param("start", Expression)
     + Optional("," + Param("length", Expression))
     + ")",
-).set_eval_fn(op.Builtin_SUBSTR)
+).set_eval_fn(op.builtin_substr)
 
 # [124] StrReplaceExpression ::= 'REPLACE' '(' Expression ',' Expression ',' Expression ( ',' Expression )? ')'
 StrReplaceExpression = Comp(
@@ -689,18 +689,18 @@ StrReplaceExpression = Comp(
     + Param("replacement", Expression)
     + Optional("," + Param("flags", Expression))
     + ")",
-).set_eval_fn(op.Builtin_REPLACE)
+).set_eval_fn(op.builtin_replace)
 
 # [125] ExistsFunc ::= 'EXISTS' GroupGraphPattern
 ExistsFunc = Comp(
     "Builtin_EXISTS", Keyword("EXISTS") + Param("graph", GroupGraphPattern)
-).set_eval_fn(op.Builtin_EXISTS)
+).set_eval_fn(op.builtin_exists)
 
 # [126] NotExistsFunc ::= 'NOT' 'EXISTS' GroupGraphPattern
 NotExistsFunc = Comp(
     "Builtin_NOTEXISTS",
     Keyword("NOT") + Keyword("EXISTS") + Param("graph", GroupGraphPattern),
-).set_eval_fn(op.Builtin_EXISTS)
+).set_eval_fn(op.builtin_exists)
 
 
 # [127] Aggregate ::= 'COUNT' '(' 'DISTINCT'? ( '*' | Expression ) ')'
@@ -799,10 +799,10 @@ BuiltInCall = (
     Aggregate
     | Comp(
         "Builtin_STR", Keyword("STR") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_STR)
+    ).set_eval_fn(op.builtin_str)
     | Comp(
         "Builtin_LANG", Keyword("LANG") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_LANG)
+    ).set_eval_fn(op.builtin_lang)
     | Comp(
         "Builtin_LANGMATCHES",
         Keyword("LANGMATCHES")
@@ -811,53 +811,53 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_LANGMATCHES)
+    ).set_eval_fn(op.builtin_langmatches)
     | Comp(
         "Builtin_DATATYPE", Keyword("DATATYPE") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_DATATYPE)
+    ).set_eval_fn(op.builtin_datatype)
     | Comp("Builtin_BOUND", Keyword("BOUND") + "(" + Param("arg", Var) + ")").set_eval_fn(
-        op.Builtin_BOUND
+        op.builtin_bound
     )
     | Comp(
         "Builtin_IRI", Keyword("IRI") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_IRI)
+    ).set_eval_fn(op.builtin_iri)
     | Comp(
         "Builtin_URI", Keyword("URI") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_IRI)
+    ).set_eval_fn(op.builtin_iri)
     | Comp(
         "Builtin_BNODE", Keyword("BNODE") + ("(" + Param("arg", Expression) + ")" | NIL)
-    ).set_eval_fn(op.Builtin_BNODE)
-    | Comp("Builtin_RAND", Keyword("RAND") + NIL).set_eval_fn(op.Builtin_RAND)
+    ).set_eval_fn(op.builtin_bnode)
+    | Comp("Builtin_RAND", Keyword("RAND") + NIL).set_eval_fn(op.builtin_rand)
     | Comp(
         "Builtin_ABS", Keyword("ABS") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_ABS)
+    ).set_eval_fn(op.builtin_abs)
     | Comp(
         "Builtin_CEIL", Keyword("CEIL") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_CEIL)
+    ).set_eval_fn(op.builtin_ceil)
     | Comp(
         "Builtin_FLOOR", Keyword("FLOOR") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_FLOOR)
+    ).set_eval_fn(op.builtin_floor)
     | Comp(
         "Builtin_ROUND", Keyword("ROUND") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_ROUND)
+    ).set_eval_fn(op.builtin_round)
     | Comp(
         "Builtin_CONCAT", Keyword("CONCAT") + Param("arg", ExpressionList)
-    ).set_eval_fn(op.Builtin_CONCAT)
+    ).set_eval_fn(op.builtin_concat)
     | SubstringExpression
     | Comp(
         "Builtin_STRLEN", Keyword("STRLEN") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_STRLEN)
+    ).set_eval_fn(op.builtin_strlen)
     | StrReplaceExpression
     | Comp(
         "Builtin_UCASE", Keyword("UCASE") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_UCASE)
+    ).set_eval_fn(op.builtin_ucase)
     | Comp(
         "Builtin_LCASE", Keyword("LCASE") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_LCASE)
+    ).set_eval_fn(op.builtin_lcase)
     | Comp(
         "Builtin_ENCODE_FOR_URI",
         Keyword("ENCODE_FOR_URI") + "(" + Param("arg", Expression) + ")",
-    ).set_eval_fn(op.Builtin_ENCODE_FOR_URI)
+    ).set_eval_fn(op.builtin_encode_for_uri)
     | Comp(
         "Builtin_CONTAINS",
         Keyword("CONTAINS")
@@ -866,7 +866,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_CONTAINS)
+    ).set_eval_fn(op.builtin_contains)
     | Comp(
         "Builtin_STRSTARTS",
         Keyword("STRSTARTS")
@@ -875,7 +875,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_STRSTARTS)
+    ).set_eval_fn(op.builtin_strstarts)
     | Comp(
         "Builtin_STRENDS",
         Keyword("STRENDS")
@@ -884,7 +884,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_STRENDS)
+    ).set_eval_fn(op.builtin_strends)
     | Comp(
         "Builtin_STRBEFORE",
         Keyword("STRBEFORE")
@@ -893,7 +893,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_STRBEFORE)
+    ).set_eval_fn(op.builtin_strbefore)
     | Comp(
         "Builtin_STRAFTER",
         Keyword("STRAFTER")
@@ -902,52 +902,52 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_STRAFTER)
+    ).set_eval_fn(op.builtin_strafter)
     | Comp(
         "Builtin_YEAR", Keyword("YEAR") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_YEAR)
+    ).set_eval_fn(op.builtin_year)
     | Comp(
         "Builtin_MONTH", Keyword("MONTH") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_MONTH)
+    ).set_eval_fn(op.builtin_month)
     | Comp(
         "Builtin_DAY", Keyword("DAY") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_DAY)
+    ).set_eval_fn(op.builtin_day)
     | Comp(
         "Builtin_HOURS", Keyword("HOURS") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_HOURS)
+    ).set_eval_fn(op.builtin_hours)
     | Comp(
         "Builtin_MINUTES", Keyword("MINUTES") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_MINUTES)
+    ).set_eval_fn(op.builtin_minutes)
     | Comp(
         "Builtin_SECONDS", Keyword("SECONDS") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_SECONDS)
+    ).set_eval_fn(op.builtin_seconds)
     | Comp(
         "Builtin_TIMEZONE", Keyword("TIMEZONE") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_TIMEZONE)
+    ).set_eval_fn(op.builtin_timezone)
     | Comp(
         "Builtin_TZ", Keyword("TZ") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_TZ)
-    | Comp("Builtin_NOW", Keyword("NOW") + NIL).set_eval_fn(op.Builtin_NOW)
-    | Comp("Builtin_UUID", Keyword("UUID") + NIL).set_eval_fn(op.Builtin_UUID)
-    | Comp("Builtin_STRUUID", Keyword("STRUUID") + NIL).set_eval_fn(op.Builtin_STRUUID)
+    ).set_eval_fn(op.builtin_tz)
+    | Comp("Builtin_NOW", Keyword("NOW") + NIL).set_eval_fn(op.builtin_now)
+    | Comp("Builtin_UUID", Keyword("UUID") + NIL).set_eval_fn(op.builtin_uuid)
+    | Comp("Builtin_STRUUID", Keyword("STRUUID") + NIL).set_eval_fn(op.builtin_struuid)
     | Comp(
         "Builtin_MD5", Keyword("MD5") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_MD5)
+    ).set_eval_fn(op.builtin_md5)
     | Comp(
         "Builtin_SHA1", Keyword("SHA1") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_SHA1)
+    ).set_eval_fn(op.builtin_sha1)
     | Comp(
         "Builtin_SHA256", Keyword("SHA256") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_SHA256)
+    ).set_eval_fn(op.builtin_sha256)
     | Comp(
         "Builtin_SHA384", Keyword("SHA384") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_SHA384)
+    ).set_eval_fn(op.builtin_sha384)
     | Comp(
         "Builtin_SHA512", Keyword("SHA512") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_SHA512)
+    ).set_eval_fn(op.builtin_sha512)
     | Comp(
         "Builtin_COALESCE", Keyword("COALESCE") + Param("arg", ExpressionList)
-    ).set_eval_fn(op.Builtin_COALESCE)
+    ).set_eval_fn(op.builtin_coalesce)
     | Comp(
         "Builtin_IF",
         Keyword("IF")
@@ -958,7 +958,7 @@ BuiltInCall = (
         + ","
         + Param("arg3", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_IF)
+    ).set_eval_fn(op.builtin_if)
     | Comp(
         "Builtin_STRLANG",
         Keyword("STRLANG")
@@ -967,7 +967,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_STRLANG)
+    ).set_eval_fn(op.builtin_strlang)
     | Comp(
         "Builtin_STRDT",
         Keyword("STRDT")
@@ -976,7 +976,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_STRDT)
+    ).set_eval_fn(op.builtin_strdt)
     | Comp(
         "Builtin_sameTerm",
         Keyword("sameTerm")
@@ -985,22 +985,22 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).set_eval_fn(op.Builtin_sameTerm)
+    ).set_eval_fn(op.builtin_sameterm)
     | Comp(
         "Builtin_isIRI", Keyword("isIRI") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_isIRI)
+    ).set_eval_fn(op.builtin_is_iri)
     | Comp(
         "Builtin_isURI", Keyword("isURI") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_isIRI)
+    ).set_eval_fn(op.builtin_is_iri)
     | Comp(
         "Builtin_isBLANK", Keyword("isBLANK") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_isBLANK)
+    ).set_eval_fn(op.builtin_is_blank)
     | Comp(
         "Builtin_isLITERAL", Keyword("isLITERAL") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_isLITERAL)
+    ).set_eval_fn(op.builtin_is_literal)
     | Comp(
         "Builtin_isNUMERIC", Keyword("isNUMERIC") + "(" + Param("arg", Expression) + ")"
-    ).set_eval_fn(op.Builtin_isNUMERIC)
+    ).set_eval_fn(op.builtin_is_numeric)
     | RegexExpression
     | ExistsFunc
     | NotExistsFunc
@@ -1017,11 +1017,11 @@ ArgList = (
 
 # [128] iriOrFunction ::= iri Optional(ArgList)
 iri_or_function = (
-    Comp("Function", Param("iri", iri) + ArgList).set_eval_fn(op.Function)
+    Comp("Function", Param("iri", iri) + ArgList).set_eval_fn(op.function)
 ) | iri
 
 # [70] FunctionCall ::= iri ArgList
-FunctionCall = Comp("Function", Param("iri", iri) + ArgList).set_eval_fn(op.Function)
+FunctionCall = Comp("Function", Param("iri", iri) + ArgList).set_eval_fn(op.function)
 
 
 # [120] BrackettedExpression ::= '(' Expression ')'
@@ -1043,10 +1043,10 @@ PrimaryExpression = (
 # | '-' PrimaryExpression
 # | PrimaryExpression
 UnaryExpression = (
-    Comp("UnaryNot", "!" + Param("expr", PrimaryExpression)).set_eval_fn(op.UnaryNot)
-    | Comp("UnaryPlus", "+" + Param("expr", PrimaryExpression)).set_eval_fn(op.UnaryPlus)
+    Comp("UnaryNot", "!" + Param("expr", PrimaryExpression)).set_eval_fn(op.unary_not)
+    | Comp("UnaryPlus", "+" + Param("expr", PrimaryExpression)).set_eval_fn(op.unary_plus)
     | Comp("UnaryMinus", "-" + Param("expr", PrimaryExpression)).set_eval_fn(
-        op.UnaryMinus
+        op.unary_minus
     )
     | PrimaryExpression
 )
@@ -1059,7 +1059,7 @@ MultiplicativeExpression = Comp(
         ParamList("op", "*") + ParamList("other", UnaryExpression)
         | ParamList("op", "/") + ParamList("other", UnaryExpression)
     ),
-).set_eval_fn(op.MultiplicativeExpression)
+).set_eval_fn(op.multiplicative_expression)
 
 # [116] AdditiveExpression ::= MultiplicativeExpression ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | ( NumericLiteralPositive | NumericLiteralNegative ) ( ( '*' UnaryExpression ) | ( '/' UnaryExpression ) )* )*
 
@@ -1077,7 +1077,7 @@ AdditiveExpression = Comp(
         ParamList("op", "+") + ParamList("other", MultiplicativeExpression)
         | ParamList("op", "-") + ParamList("other", MultiplicativeExpression)
     ),
-).set_eval_fn(op.AdditiveExpression)
+).set_eval_fn(op.additive_expression)
 
 
 # [115] NumericExpression ::= AdditiveExpression

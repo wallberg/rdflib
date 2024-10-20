@@ -43,7 +43,7 @@ from rdflib.plugins.sparql.aggregates import Aggregator
 from rdflib.plugins.sparql.evalutils import (
     _ebv,
     _eval,
-    _fillTemplate,
+    _fill_template,
     _join,
     _minus,
     _val,
@@ -75,7 +75,7 @@ except ImportError:
 _Triple = Tuple[Identifier, Identifier, Identifier]
 
 
-def evalBGP(
+def eval_bgp(
     ctx: QueryContext, bgp: List[_Triple]
 ) -> Generator[FrozenBindings, None, None]:
     """
@@ -118,16 +118,16 @@ def evalBGP(
         except AlreadyBound:
             continue
 
-        for x in evalBGP(c, bgp[1:]):
+        for x in eval_bgp(c, bgp[1:]):
             yield x
 
 
-def evalExtend(
+def eval_extend(
     ctx: QueryContext, extend: CompValue
 ) -> Generator[FrozenBindings, None, None]:
     # TODO: Deal with dict returned from evalPart from GROUP BY
 
-    for c in evalPart(ctx, extend.p):
+    for c in eval_part(ctx, extend.p):
         try:
             e = _eval(extend.expr, c.forget(ctx, _except=extend._vars))
             if isinstance(e, SPARQLError):
@@ -139,7 +139,7 @@ def evalExtend(
             yield c
 
 
-def evalLazyJoin(
+def eval_lazy_join(
     ctx: QueryContext, join: CompValue
 ) -> Generator[FrozenBindings, None, None]:
     """
@@ -148,47 +148,47 @@ def evalLazyJoin(
     essentially doing the join implicitly
     hopefully evaluating much fewer triples
     """
-    for a in evalPart(ctx, join.p1):
+    for a in eval_part(ctx, join.p1):
         c = ctx.thaw(a)
-        for b in evalPart(c, join.p2):
+        for b in eval_part(c, join.p2):
             yield b.merge(a)  # merge, as some bindings may have been forgotten
 
 
-def evalJoin(ctx: QueryContext, join: CompValue) -> Generator[FrozenDict, None, None]:
+def eval_join(ctx: QueryContext, join: CompValue) -> Generator[FrozenDict, None, None]:
     # TODO: Deal with dict returned from evalPart from GROUP BY
     # only ever for join.p1
 
     if join.lazy:
-        return evalLazyJoin(ctx, join)
+        return eval_lazy_join(ctx, join)
     else:
-        a = evalPart(ctx, join.p1)
-        b = set(evalPart(ctx, join.p2))
+        a = eval_part(ctx, join.p1)
+        b = set(eval_part(ctx, join.p2))
         return _join(a, b)
 
 
-def evalUnion(ctx: QueryContext, union: CompValue) -> List[Any]:
+def eval_union(ctx: QueryContext, union: CompValue) -> List[Any]:
     branch1_branch2 = []
-    for x in evalPart(ctx, union.p1):
+    for x in eval_part(ctx, union.p1):
         branch1_branch2.append(x)
-    for x in evalPart(ctx, union.p2):
+    for x in eval_part(ctx, union.p2):
         branch1_branch2.append(x)
     return branch1_branch2
 
 
-def evalMinus(ctx: QueryContext, minus: CompValue) -> Generator[FrozenDict, None, None]:
-    a = evalPart(ctx, minus.p1)
-    b = set(evalPart(ctx, minus.p2))
+def eval_minus(ctx: QueryContext, minus: CompValue) -> Generator[FrozenDict, None, None]:
+    a = eval_part(ctx, minus.p1)
+    b = set(eval_part(ctx, minus.p2))
     return _minus(a, b)
 
 
-def evalLeftJoin(
+def eval_left_join(
     ctx: QueryContext, join: CompValue
 ) -> Generator[FrozenBindings, None, None]:
     # import pdb; pdb.set_trace()
-    for a in evalPart(ctx, join.p1):
+    for a in eval_part(ctx, join.p1):
         ok = False
         c = ctx.thaw(a)
-        for b in evalPart(c, join.p2):
+        for b in eval_part(c, join.p2):
             if _ebv(join.expr, b.forget(ctx)):
                 ok = True
                 yield b
@@ -201,16 +201,16 @@ def evalLeftJoin(
             p1_vars = join.p1._vars
             if p1_vars is None or not any(
                 _ebv(join.expr, b)
-                for b in evalPart(ctx.thaw(a.remember(p1_vars)), join.p2)
+                for b in eval_part(ctx.thaw(a.remember(p1_vars)), join.p2)
             ):
                 yield a
 
 
-def evalFilter(
+def eval_filter(
     ctx: QueryContext, part: CompValue
 ) -> Generator[FrozenBindings, None, None]:
     # TODO: Deal with dict returned from evalPart!
-    for c in evalPart(ctx, part.p):
+    for c in eval_part(ctx, part.p):
         if _ebv(
             part.expr,
             c.forget(ctx, _except=part._vars) if not part.no_isolated_scope else c,
@@ -218,7 +218,7 @@ def evalFilter(
             yield c
 
 
-def evalGraph(
+def eval_graph(
     ctx: QueryContext, part: CompValue
 ) -> Generator[FrozenBindings, None, None]:
     if ctx.dataset is None:
@@ -238,8 +238,8 @@ def evalGraph(
 
             c = ctx.push_graph(graph)
             c = c.push()
-            graphSolution = [{part.term: graph.identifier}]
-            for x in _join(evalPart(c, part.p), graphSolution):
+            graph_solution = [{part.term: graph.identifier}]
+            for x in _join(eval_part(c, part.p), graph_solution):
                 x.ctx.graph = prev_graph
                 yield x
 
@@ -248,12 +248,12 @@ def evalGraph(
             assert not isinstance(graph, Graph)
         # type error: Argument 1 to "get_context" of "ConjunctiveGraph" has incompatible type "Union[str, Path]"; expected "Union[Node, str, None]"
         c = ctx.push_graph(ctx.dataset.get_context(graph))  # type: ignore[arg-type]
-        for x in evalPart(c, part.p):
+        for x in eval_part(c, part.p):
             x.ctx.graph = prev_graph
             yield x
 
 
-def evalValues(
+def eval_values(
     ctx: QueryContext, part: CompValue
 ) -> Generator[FrozenBindings, None, None]:
     for r in part.p.res:
@@ -268,14 +268,14 @@ def evalValues(
         yield c.solution()
 
 
-def evalMultiset(ctx: QueryContext, part: CompValue):
+def eval_multiset(ctx: QueryContext, part: CompValue):
     if part.p.name == "values":
-        return evalValues(ctx, part)
+        return eval_values(ctx, part)
 
-    return evalPart(ctx, part.p)
+    return eval_part(ctx, part.p)
 
 
-def evalPart(ctx: QueryContext, part: CompValue) -> Any:
+def eval_part(ctx: QueryContext, part: CompValue) -> Any:
     # try custom evaluation functions
     for name, c in CUSTOM_EVALS.items():
         try:
@@ -290,58 +290,58 @@ def evalPart(ctx: QueryContext, part: CompValue) -> Any:
             part.triples, key=lambda t: len([n for n in t if ctx[n] is None])
         )
 
-        return evalBGP(ctx, triples)
+        return eval_bgp(ctx, triples)
     elif part.name == "Filter":
-        return evalFilter(ctx, part)
+        return eval_filter(ctx, part)
     elif part.name == "Join":
-        return evalJoin(ctx, part)
+        return eval_join(ctx, part)
     elif part.name == "LeftJoin":
-        return evalLeftJoin(ctx, part)
+        return eval_left_join(ctx, part)
     elif part.name == "Graph":
-        return evalGraph(ctx, part)
+        return eval_graph(ctx, part)
     elif part.name == "Union":
-        return evalUnion(ctx, part)
+        return eval_union(ctx, part)
     elif part.name == "ToMultiSet":
-        return evalMultiset(ctx, part)
+        return eval_multiset(ctx, part)
     elif part.name == "Extend":
-        return evalExtend(ctx, part)
+        return eval_extend(ctx, part)
     elif part.name == "Minus":
-        return evalMinus(ctx, part)
+        return eval_minus(ctx, part)
 
     elif part.name == "Project":
-        return evalProject(ctx, part)
+        return eval_project(ctx, part)
     elif part.name == "Slice":
-        return evalSlice(ctx, part)
+        return eval_slice(ctx, part)
     elif part.name == "Distinct":
-        return evalDistinct(ctx, part)
+        return eval_distinct(ctx, part)
     elif part.name == "Reduced":
-        return evalReduced(ctx, part)
+        return eval_reduced(ctx, part)
 
     elif part.name == "OrderBy":
-        return evalOrderBy(ctx, part)
+        return eval_order_by(ctx, part)
     elif part.name == "Group":
-        return evalGroup(ctx, part)
+        return eval_group(ctx, part)
     elif part.name == "AggregateJoin":
-        return evalAggregateJoin(ctx, part)
+        return eval_aggregate_join(ctx, part)
 
     elif part.name == "SelectQuery":
-        return evalSelectQuery(ctx, part)
+        return eval_select_query(ctx, part)
     elif part.name == "AskQuery":
-        return evalAskQuery(ctx, part)
+        return eval_ask_query(ctx, part)
     elif part.name == "ConstructQuery":
-        return evalConstructQuery(ctx, part)
+        return eval_construct_query(ctx, part)
 
     elif part.name == "ServiceGraphPattern":
-        return evalServiceQuery(ctx, part)
+        return eval_service_query(ctx, part)
 
     elif part.name == "DescribeQuery":
-        return evalDescribeQuery(ctx, part)
+        return eval_describe_query(ctx, part)
 
     else:
         raise Exception("I dont know: %s" % part.name)
 
 
-def evalServiceQuery(ctx: QueryContext, part: CompValue):
+def eval_service_query(ctx: QueryContext, part: CompValue):
     res = {}
     match = re.match(
         "^service <(.*)>[ \n]*{(.*)}[ \n]*$",
@@ -352,7 +352,7 @@ def evalServiceQuery(ctx: QueryContext, part: CompValue):
 
     if match:
         service_url = match.group(1)
-        service_query = _buildQueryStringForServiceCall(ctx, match.group(2))
+        service_query = _build_query_string_for_service_call(ctx, match.group(2))
 
         query_settings = {"query": service_query, "output": "json"}
         headers = {
@@ -383,7 +383,7 @@ def evalServiceQuery(ctx: QueryContext, part: CompValue):
             if len(res) > 0:
                 for r in res:
                     # type error: Argument 2 to "_yieldBindingsFromServiceCallResult" has incompatible type "str"; expected "Dict[str, Dict[str, str]]"
-                    for bound in _yieldBindingsFromServiceCallResult(ctx, r, variables):  # type: ignore[arg-type]
+                    for bound in _yield_bindings_from_service_call_results(ctx, r, variables):  # type: ignore[arg-type]
                         yield bound
         else:
             raise Exception(
@@ -399,7 +399,7 @@ def evalServiceQuery(ctx: QueryContext, part: CompValue):
 """
 
 
-def _buildQueryStringForServiceCall(ctx: QueryContext, service_query: str) -> str:
+def _build_query_string_for_service_call(ctx: QueryContext, service_query: str) -> str:
     try:
         parser.parse_query(service_query)
     except ParseException:
@@ -423,7 +423,7 @@ def _buildQueryStringForServiceCall(ctx: QueryContext, service_query: str) -> st
     return service_query
 
 
-def _yieldBindingsFromServiceCallResult(
+def _yield_bindings_from_service_call_results(
     ctx: QueryContext, r: Dict[str, Dict[str, str]], variables: List[str]
 ) -> Generator[FrozenBindings, None, None]:
     res_dict: Dict[Variable, Identifier] = {}
@@ -452,19 +452,19 @@ def _yieldBindingsFromServiceCallResult(
     yield FrozenBindings(ctx, res_dict)
 
 
-def evalGroup(ctx: QueryContext, group: CompValue):
+def eval_group(ctx: QueryContext, group: CompValue):
     """
     http://www.w3.org/TR/sparql11-query/#defn_algGroup
     """
     # grouping should be implemented by evalAggregateJoin
-    return evalPart(ctx, group.p)
+    return eval_part(ctx, group.p)
 
 
-def evalAggregateJoin(
+def eval_aggregate_join(
     ctx: QueryContext, agg: CompValue
 ) -> Generator[FrozenBindings, None, None]:
     # import pdb ; pdb.set_trace()
-    p = evalPart(ctx, agg.p)
+    p = eval_part(ctx, agg.p)
     # p is always a Group, we always get a dict back
 
     group_expr = agg.p.expr
@@ -493,10 +493,10 @@ def evalAggregateJoin(
         yield FrozenBindings(ctx)
 
 
-def evalOrderBy(
+def eval_order_by(
     ctx: QueryContext, part: CompValue
 ) -> Generator[FrozenBindings, None, None]:
-    res = evalPart(ctx, part.p)
+    res = eval_part(ctx, part.p)
 
     for e in reversed(part.expr):
         reverse = bool(e.order and e.order == "DESC")
@@ -507,8 +507,8 @@ def evalOrderBy(
     return res
 
 
-def evalSlice(ctx: QueryContext, slice: CompValue):
-    res = evalPart(ctx, slice.p)
+def eval_slice(ctx: QueryContext, slice: CompValue):
+    res = eval_part(ctx, slice.p)
 
     return itertools.islice(
         res,
@@ -517,7 +517,7 @@ def evalSlice(ctx: QueryContext, slice: CompValue):
     )
 
 
-def evalReduced(
+def eval_reduced(
     ctx: QueryContext, part: CompValue
 ) -> Generator[FrozenBindings, None, None]:
     """apply REDUCED to result
@@ -530,7 +530,7 @@ def evalReduced(
     # This implementation uses a most recently used strategy and a limited
     # buffer size. It relates to a LRU caching algorithm:
     # https://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used_.28LRU.29
-    MAX = 1
+    max = 1
     # TODO: add configuration or determine "best" size for most use cases
     # 0: No reduction
     # 1: compare only with the last row, almost no reduction with
@@ -542,7 +542,7 @@ def evalReduced(
     mru_set = set()
     mru_queue: Deque[Any] = collections.deque()
 
-    for row in evalPart(ctx, part.p):
+    for row in eval_part(ctx, part.p):
         if row in mru_set:
             # forget last position of row
             mru_queue.remove(row)
@@ -550,17 +550,17 @@ def evalReduced(
             # row seems to be new
             yield row
             mru_set.add(row)
-            if len(mru_set) > MAX:
+            if len(mru_set) > max:
                 # drop the least recently used row from buffer
                 mru_set.remove(mru_queue.pop())
         # put row to the front
         mru_queue.appendleft(row)
 
 
-def evalDistinct(
+def eval_distinct(
     ctx: QueryContext, part: CompValue
 ) -> Generator[FrozenBindings, None, None]:
-    res = evalPart(ctx, part.p)
+    res = eval_part(ctx, part.p)
 
     done = set()
     for x in res:
@@ -569,33 +569,33 @@ def evalDistinct(
             done.add(x)
 
 
-def evalProject(ctx: QueryContext, project: CompValue):
-    res = evalPart(ctx, project.p)
+def eval_project(ctx: QueryContext, project: CompValue):
+    res = eval_part(ctx, project.p)
     return (row.project(project.PV) for row in res)
 
 
-def evalSelectQuery(
+def eval_select_query(
     ctx: QueryContext, query: CompValue
 ) -> Mapping[str, Union[str, List[Variable], Iterable[FrozenDict]]]:
     res: Dict[str, Union[str, List[Variable], Iterable[FrozenDict]]] = {}
     res["type_"] = "SELECT"
-    res["bindings"] = evalPart(ctx, query.p)
+    res["bindings"] = eval_part(ctx, query.p)
     res["vars_"] = query.PV
     return res
 
 
-def evalAskQuery(ctx: QueryContext, query: CompValue) -> Mapping[str, Union[str, bool]]:
+def eval_ask_query(ctx: QueryContext, query: CompValue) -> Mapping[str, Union[str, bool]]:
     res: Dict[str, Union[bool, str]] = {}
     res["type_"] = "ASK"
     res["askAnswer"] = False
-    for x in evalPart(ctx, query.p):
+    for x in eval_part(ctx, query.p):
         res["askAnswer"] = True
         break
 
     return res
 
 
-def evalConstructQuery(
+def eval_construct_query(
     ctx: QueryContext, query: CompValue
 ) -> Mapping[str, Union[str, Graph]]:
     template = query.template
@@ -606,8 +606,8 @@ def evalConstructQuery(
 
     graph = Graph()
 
-    for c in evalPart(ctx, query.p):
-        graph += _fillTemplate(template, c)
+    for c in eval_part(ctx, query.p):
+        graph += _fill_template(template, c)
 
     res: Dict[str, Union[str, Graph]] = {}
     res["type_"] = "CONSTRUCT"
@@ -616,7 +616,7 @@ def evalConstructQuery(
     return res
 
 
-def evalDescribeQuery(ctx: QueryContext, query) -> Dict[str, Union[str, Graph]]:
+def eval_describe_query(ctx: QueryContext, query) -> Dict[str, Union[str, Graph]]:
     # Create a result graph and bind namespaces from the graph being queried
     graph = Graph()
     # type error: Item "None" of "Optional[Graph]" has no attribute "namespaces"
@@ -636,7 +636,7 @@ def evalDescribeQuery(ctx: QueryContext, query) -> Dict[str, Union[str, Graph]]:
     # If there is a WHERE clause, evaluate it then find the unique set of
     # resources to describe across all bindings and projected variables
     if query.p is not None:
-        bindings = evalPart(ctx, query.p)
+        bindings = eval_part(ctx, query.p)
         to_describe.update(*(set(binding.values()) for binding in bindings))
 
     # Get a CBD for all resources identified to describe
@@ -651,10 +651,10 @@ def evalDescribeQuery(ctx: QueryContext, query) -> Dict[str, Union[str, Graph]]:
     return res
 
 
-def evalQuery(
+def eval_query(
     graph: Graph,
     query: Query,
-    initBindings: Optional[Mapping[str, Identifier]] = None,
+    init_bindings: Optional[Mapping[str, Identifier]] = None,
     base: Optional[str] = None,
 ) -> Mapping[Any, Any]:
     """
@@ -674,12 +674,12 @@ def evalQuery(
     """
     main = query.algebra
 
-    initBindings = dict((Variable(k), v) for k, v in (initBindings or {}).items())
+    init_bindings = dict((Variable(k), v) for k, v in (init_bindings or {}).items())
 
     ctx = QueryContext(
-        graph, init_bindings=initBindings, dataset_clause=main.datasetClause
+        graph, init_bindings=init_bindings, dataset_clause=main.datasetClause
     )
 
     ctx.prologue = query.prologue
 
-    return evalPart(ctx, main)
+    return eval_part(ctx, main)
