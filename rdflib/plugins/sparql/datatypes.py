@@ -66,7 +66,7 @@ for superdt in XSD_DTs:
         _super_types[subdt] = superdt
 
 # we only care about float, double, integer, decimal
-_typePromotionMap: Dict[URIRef, Dict[URIRef, URIRef]] = {
+_type_promotion_map: Dict[URIRef, Dict[URIRef, URIRef]] = {
     XSD.float: {XSD.integer: XSD.float, XSD.decimal: XSD.float, XSD.double: XSD.double},
     XSD.double: {
         XSD.integer: XSD.double,
@@ -97,6 +97,6 @@ def type_promotion(t1: URIRef, t2: Optional[URIRef]) -> URIRef:
         if TYPE_CHECKING:
             # type assert because mypy is confused and thinks t2 can be None
             assert t2 is not None
-        return _typePromotionMap[t1][t2]
+        return _type_promotion_map[t1][t2]
     except KeyError:
         raise TypeError("Operators cannot combine datatypes %s and %s" % (t1, t2))
