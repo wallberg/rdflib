@@ -1,5 +1,5 @@
 from rdflib import Graph, Literal, URIRef
-from rdflib.plugins.sparql import prepareQuery
+from rdflib.plugins.sparql import prepare_query
 
 
 class TestConstructInitBindings:
@@ -21,7 +21,7 @@ class TestConstructInitBindings:
           bind(?b as ?val1)
         }
         """
-        q_prepared = prepareQuery(q_str)
+        q_prepared = prepare_query(q_str)
 
         expected = [
             (URIRef("urn:ns1:A"), URIRef("urn:ns1:prop1"), Literal("B")),

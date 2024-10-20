@@ -12,11 +12,11 @@ import rdflib.plugins.sparql.parser
 from rdflib import BNode, ConjunctiveGraph, Graph, Literal, URIRef
 from rdflib.compare import isomorphic
 from rdflib.namespace import RDF, RDFS, Namespace
-from rdflib.plugins.sparql import prepareQuery, sparql
+from rdflib.plugins.sparql import prepare_query, sparql
 from rdflib.plugins.sparql.algebra import translateQuery
 from rdflib.plugins.sparql.evaluate import evalPart
 from rdflib.plugins.sparql.evalutils import _eval
-from rdflib.plugins.sparql.parser import expandUnicodeEscapes, parseQuery
+from rdflib.plugins.sparql.parser import expand_unicode_escapes, parse_query
 from rdflib.plugins.sparql.parserutils import prettify_parsetree
 from rdflib.plugins.sparql.sparql import SPARQLError
 from rdflib.query import Result, ResultRow
@@ -56,7 +56,7 @@ def test_graph_prefix():
     SELECT ?val
     WHERE { :foo ?p ?val }
     """
-    q_prepared = prepareQuery(q_str)
+    q_prepared = prepare_query(q_str)
 
     expected = [(Literal(42),)]
 
@@ -87,10 +87,10 @@ def test_sparql_bnodelist():
 
     """
 
-    prepareQuery("select * where { ?s ?p ( [] ) . }")
-    prepareQuery("select * where { ?s ?p ( [ ?p2 ?o2 ] ) . }")
-    prepareQuery("select * where { ?s ?p ( [ ?p2 ?o2 ] [] ) . }")
-    prepareQuery("select * where { ?s ?p ( [] [ ?p2 ?o2 ] [] ) . }")
+    prepare_query("select * where { ?s ?p ( [] ) . }")
+    prepare_query("select * where { ?s ?p ( [ ?p2 ?o2 ] ) . }")
+    prepare_query("select * where { ?s ?p ( [ ?p2 ?o2 ] [] ) . }")
+    prepare_query("select * where { ?s ?p ( [] [ ?p2 ?o2 ] [] ) . }")
 
 
 @pytest.mark.xfail(
@@ -493,7 +493,7 @@ def test_operator_exception(
         raise exception_type("TEST ERROR")
 
     monkeypatch.setattr(
-        rdflib.plugins.sparql.operators, "calculateFinalDateTime", thrower
+        rdflib.plugins.sparql.operators, "calculate_final_datetime", thrower
     )
 
     graph = Graph()
@@ -873,7 +873,7 @@ def test_queries(
     """
     Results of queries against the rdfs.ttl return the expected values.
     """
-    query_tree = parseQuery(query_string)
+    query_tree = parse_query(query_string)
 
     logging.debug("query_tree = %s", prettify_parsetree(query_tree))
     logging.debug("query_tree = %s", query_tree)
@@ -992,8 +992,8 @@ def test_sparql_describe(
 )
 def test_expand_unicode_escapes(arg: str, expected_result: str, expected_valid: bool):
     if expected_valid:
-        actual_result = expandUnicodeEscapes(arg)
+        actual_result = expand_unicode_escapes(arg)
         assert actual_result == expected_result
     else:
         with pytest.raises(ValueError, match="Invalid unicode code point"):
-            _ = expandUnicodeEscapes(arg)
+            _ = expand_unicode_escapes(arg)

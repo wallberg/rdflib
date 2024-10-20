@@ -34,7 +34,7 @@ PLUGIN_ENTRY_POINT = "rdf.plugins.sparqleval"
 
 
 from . import operators, parser, parserutils
-from .processor import prepareQuery, prepareUpdate, processUpdate
+from .processor import prepare_query, prepare_update, process_update
 
 assert parser
 assert operators
@@ -53,9 +53,9 @@ else:
         CUSTOM_EVALS[ep.name] = ep.load()
 
 __all__ = [
-    "prepareQuery",
-    "prepareUpdate",
-    "processUpdate",
+    "prepare_query",
+    "prepare_update",
+    "process_update",
     "operators",
     "parser",
     "parserutils",

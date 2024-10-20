@@ -2,11 +2,11 @@ import os
 
 from rdflib import Graph, URIRef
 from rdflib.namespace import FOAF
-from rdflib.plugins.sparql import prepareQuery, prepareUpdate
+from rdflib.plugins.sparql import prepare_query, prepare_update
 
 
 def test_prepare_update():
-    q = prepareUpdate(
+    q = prepare_update(
         """\
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
 INSERT DATA
@@ -14,7 +14,7 @@ INSERT DATA
                          dc:creator "A.N.Other" .
  } ;
 """,
-        initNs={},
+        init_ns={},
     )
 
     g = Graph()
@@ -23,9 +23,9 @@ INSERT DATA
 
 
 def test_prepare_query():
-    q = prepareQuery(
+    q = prepare_query(
         "SELECT ?name WHERE { ?person foaf:knows/foaf:name ?name . }",
-        initNs={"foaf": FOAF},
+        init_ns={"foaf": FOAF},
     )
 
     g = Graph()

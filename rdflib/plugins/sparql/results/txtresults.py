@@ -8,7 +8,7 @@ from rdflib.query import ResultSerializer
 from rdflib.term import BNode, Literal, URIRef, Variable
 
 
-def _termString(
+def _term_string(
     t: Optional[Union[URIRef, Literal, BNode]],
     namespace_manager: Optional[NamespaceManager],
 ) -> str:
@@ -65,7 +65,7 @@ class TXTResultSerializer(ResultSerializer):
                 # type error: Argument 1 to "_termString" has incompatible type "Union[Node, Any]"; expected "Union[URIRef, Literal, BNode, None]"  [arg-type]
                 # type error: No overload variant of "__getitem__" of "tuple" matches argument type "Variable"
                 # NOTE on type error: The problem here is that r can be more types than _termString expects because result can be a result of multiple types.
-                [_termString(r[k], namespace_manager) for k in keys]  # type: ignore[index, arg-type, call-overload]
+                [_term_string(r[k], namespace_manager) for k in keys]  # type: ignore[index, arg-type, call-overload]
                 for r in self.result
             ]
             for r in b:

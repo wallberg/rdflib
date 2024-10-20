@@ -150,7 +150,7 @@ class FrozenDict(Mapping):
     def project(self, vars: Container[Variable]) -> FrozenDict:
         return FrozenDict(x for x in self.items() if x[0] in vars)
 
-    def disjointDomain(self, other: t.Mapping[Identifier, Identifier]) -> bool:
+    def disjoint_domain(self, other: t.Mapping[Identifier, Identifier]) -> bool:
         return not bool(set(self).intersection(other))
 
     def compatible(self, other: t.Mapping[Identifier, Identifier]) -> bool:
@@ -254,32 +254,32 @@ class QueryContext:
         self,
         graph: Optional[Graph] = None,
         bindings: Optional[Union[Bindings, FrozenBindings, List[Any]]] = None,
-        initBindings: Optional[Mapping[str, Identifier]] = None,
-        datasetClause=None,
+        init_bindings: Optional[Mapping[str, Identifier]] = None,
+        dataset_clause=None,
     ):
-        self.initBindings = initBindings
+        self.initBindings = init_bindings
         self.bindings = Bindings(d=bindings or [])
-        if initBindings:
-            self.bindings.update(initBindings)
+        if init_bindings:
+            self.bindings.update(init_bindings)
 
         self.graph: Optional[Graph]
         self._dataset: Optional[Union[Dataset, ConjunctiveGraph]]
         if isinstance(graph, (Dataset, ConjunctiveGraph)):
-            if datasetClause:
+            if dataset_clause:
                 self._dataset = Dataset()
                 self.graph = Graph()
-                for d in datasetClause:
+                for d in dataset_clause:
                     if d.default:
                         from_graph = graph.get_context(d.default)
                         self.graph += from_graph
                         if not from_graph:
                             self.load(d.default, default=True)
                     elif d.named:
-                        namedGraphs = Graph(
+                        named_graphs = Graph(
                             store=self.dataset.store, identifier=d.named
                         )
                         from_named_graphs = graph.get_context(d.named)
-                        namedGraphs += from_named_graphs
+                        named_graphs += from_named_graphs
                         if not from_named_graphs:
                             self.load(d.named, default=False)
             else:
@@ -311,7 +311,7 @@ class QueryContext:
         r = QueryContext(
             self._dataset if self._dataset is not None else self.graph,
             bindings or self.bindings,
-            initBindings=self.initBindings,
+            init_bindings=self.initBindings,
         )
         r.prologue = self.prologue
         r.graph = self.graph
@@ -416,7 +416,7 @@ class QueryContext:
 
         self.bindings[key] = value
 
-    def pushGraph(self, graph: Optional[Graph]) -> QueryContext:
+    def push_graph(self, graph: Optional[Graph]) -> QueryContext:
         r = self.clone()
         r.graph = graph
         return r
@@ -446,7 +446,7 @@ class Prologue:
         self.base: Optional[str] = None
         self.namespace_manager = NamespaceManager(Graph())  # ns man needs a store
 
-    def resolvePName(self, prefix: Optional[str], localname: Optional[str]) -> URIRef:
+    def resolve_pname(self, prefix: Optional[str], localname: Optional[str]) -> URIRef:
         ns = self.namespace_manager.store.namespace(prefix or "")
         if ns is None:
             raise Exception("Unknown namespace prefix : %s" % prefix)
@@ -467,7 +467,7 @@ class Prologue:
 
         if isinstance(iri, CompValue):
             if iri.name == "pname":
-                return self.resolvePName(iri.prefix, iri.localname)
+                return self.resolve_pname(iri.prefix, iri.localname)
             if iri.name == "literal":
                 # type error: Argument "datatype" to "Literal" has incompatible type "Union[CompValue, Identifier, None]"; expected "Optional[str]"
                 return Literal(

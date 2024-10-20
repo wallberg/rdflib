@@ -6,7 +6,7 @@ from typing import Set, Tuple
 
 from rdflib import Graph, Literal
 from rdflib.namespace import Namespace
-from rdflib.plugins.sparql.processor import processUpdate
+from rdflib.plugins.sparql.processor import process_update
 from rdflib.term import Node
 
 
@@ -41,6 +41,6 @@ class TestSPARQLParser:
 
         assert triple_set(g0) != triple_set(g1)
 
-        processUpdate(g1, f"INSERT DATA {{ {g0ntriples!s} }}")
+        process_update(g1, f"INSERT DATA {{ {g0ntriples!s} }}")
 
         assert triple_set(g0) == triple_set(g1)

@@ -107,17 +107,17 @@ class ParamValue:
     """
 
     def __init__(
-        self, name: str, tokenList: Union[List[Any], ParseResults], isList: bool
+        self, name: str, token_list: Union[List[Any], ParseResults], is_list: bool
     ):
-        self.isList = isList
+        self.isList = is_list
         self.name = name
-        if isinstance(tokenList, (list, ParseResults)) and len(tokenList) == 1:
-            tokenList = tokenList[0]
+        if isinstance(token_list, (list, ParseResults)) and len(token_list) == 1:
+            token_list = token_list[0]
 
-        self.tokenList = tokenList
+        self.token_list = token_list
 
     def __str__(self) -> str:
-        return "Param(%s, %s)" % (self.name, self.tokenList)
+        return "Param(%s, %s)" % (self.name, self.token_list)
 
 
 class Param(TokenConverter):
@@ -127,14 +127,14 @@ class Param(TokenConverter):
     their values merged in a list
     """
 
-    def __init__(self, name: str, expr, isList: bool = False):
-        self.isList = isList
+    def __init__(self, name: str, expr, is_list: bool = False):
+        self.isList = is_list
         TokenConverter.__init__(self, expr)
         self.setName(name)
-        self.addParseAction(self.postParse2)
+        self.addParseAction(self.post_parse2)
 
-    def postParse2(self, tokenList: Union[List[Any], ParseResults]) -> ParamValue:
-        return ParamValue(self.name, tokenList, self.isList)
+    def post_parse2(self, token_list: Union[List[Any], ParseResults]) -> ParamValue:
+        return ParamValue(self.name, token_list, self.isList)
 
 
 class ParamList(Param):
@@ -244,8 +244,8 @@ class Comp(TokenConverter):
         self.setName(name)
         self.evalfn: Optional[Callable[[Any, Any], Any]] = None
 
-    def postParse(
-        self, instring: str, loc: int, tokenList: ParseResults
+    def postParse(  # noqa: N802
+        self, instring: str, loc: int, token_list: ParseResults
     ) -> Union[Expr, CompValue]:
         res: Union[Expr, CompValue]
         if self.evalfn:
@@ -261,20 +261,20 @@ class Comp(TokenConverter):
                 service_string = sgp.searchString(instring)[0][0]
                 res["service_string"] = service_string
 
-        for t in tokenList:
+        for t in token_list:
             if isinstance(t, ParamValue):
                 if t.isList:
                     if t.name not in res:
                         res[t.name] = []
-                    res[t.name].append(t.tokenList)
+                    res[t.name].append(t.token_list)
                 else:
-                    res[t.name] = t.tokenList
-                # res.append(t.tokenList)
+                    res[t.name] = t.token_list
+                # res.append(t.token_list)
             # if isinstance(t,CompValue):
             #    res.update(t)
         return res
 
-    def setEvalFn(self, evalfn: Callable[[Any, Any], Any]) -> Comp:
+    def set_eval_fn(self, evalfn: Callable[[Any, Any], Any]) -> Comp:
         self.evalfn = evalfn
         return self
 

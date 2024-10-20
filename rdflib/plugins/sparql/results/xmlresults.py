@@ -107,7 +107,7 @@ class XMLResult(Result):
                     # NOTE on type error: Element.get() can return None, and
                     # this will invariably fail if passed into Variable
                     # constructor as value
-                    r[Variable(binding.get("name"))] = parseTerm(binding[0])  # type: ignore[arg-type] # FIXME
+                    r[Variable(binding.get("name"))] = parse_term(binding[0])  # type: ignore[arg-type] # FIXME
                 self.bindings.append(r)
 
             self.vars = [
@@ -125,7 +125,7 @@ class XMLResult(Result):
             self.askAnswer = boolean.text.lower().strip() == "true"  # type: ignore[union-attr]
 
 
-def parseTerm(element: xml_etree.Element) -> Union[URIRef, Literal, BNode]:
+def parse_term(element: xml_etree.Element) -> Union[URIRef, Literal, BNode]:
     """rdflib object (Literal, URIRef, BNode) for the given
     elementtree element"""
     tag, text = element.tag, element.text
@@ -195,13 +195,13 @@ class SPARQLXMLWriter:
         self._encoding = encoding
         self._results = False
 
-    def write_header(self, allvarsL: Sequence[Variable]) -> None:
+    def write_header(self, allvars_l: Sequence[Variable]) -> None:
         self.writer.startElementNS(
             (SPARQL_XML_NAMESPACE, "head"), "head", AttributesNSImpl({}, {})
         )
-        for i in range(0, len(allvarsL)):
+        for i in range(0, len(allvars_l)):
             attr_vals = {
-                (None, "name"): str(allvarsL[i]),
+                (None, "name"): str(allvars_l[i]),
             }
             attr_qnames = {
                 (None, "name"): "name",

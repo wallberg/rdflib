@@ -257,7 +257,7 @@ if os.name != "nt":
             "into the query text.",
             pytest.mark.xfail(
                 raises=RecursionError,
-                reason="Fails with RecursionError inside parser.parseQuery",
+                reason="Fails with RecursionError inside parser.parse_query",
             ),
         )
     )
@@ -285,7 +285,7 @@ def test_roundtrip(test_spec: AlgebraTest, data_path: Path) -> None:
     query_text = (data_path / test_spec.filename).read_text()
 
     logging.info("checking expectation: %s", test_spec.description)
-    query_tree = parser.parseQuery(query_text)
+    query_tree = parser.parse_query(query_text)
     query_algebra = algebra.translateQuery(query_tree)
     query_from_algebra = translateAlgebra(query_algebra)
     logging.debug(
@@ -293,7 +293,7 @@ def test_roundtrip(test_spec: AlgebraTest, data_path: Path) -> None:
         query_from_algebra,
     )
 
-    query_tree_2 = parser.parseQuery(query_from_algebra)
+    query_tree_2 = parser.parse_query(query_from_algebra)
     query_algebra_2 = algebra.translateQuery(query_tree_2)
     query_from_query_from_algebra = translateAlgebra(query_algebra_2)
     logging.debug(

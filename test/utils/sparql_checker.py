@@ -20,7 +20,7 @@ from rdflib.graph import Dataset, Graph
 from rdflib.namespace import RDFS
 from rdflib.plugins import sparql as rdflib_sparql_module
 from rdflib.plugins.sparql.algebra import translateQuery, translateUpdate
-from rdflib.plugins.sparql.parser import parseQuery, parseUpdate
+from rdflib.plugins.sparql.parser import parse_query, parse_update
 from rdflib.plugins.sparql.results.rdfresults import RDFResultParser
 from rdflib.query import Result
 from rdflib.term import BNode, IdentifiedNode, Identifier, Literal, Node, URIRef
@@ -293,10 +293,10 @@ def check_syntax(monkeypatch: MonkeyPatch, entry: SPARQLEntry) -> None:
         if entry.type_info.negative:
             catcher = xstack.enter_context(pytest.raises(Exception))
         if entry.type_info.query_type is QueryType.UPDATE:
-            parse_tree = parseUpdate(query_text)
+            parse_tree = parse_update(query_text)
             translateUpdate(parse_tree)
         elif entry.type_info.query_type is QueryType.QUERY:
-            query_tree = parseQuery(query_text)
+            query_tree = parse_query(query_text)
             translateQuery(query_tree)
     if catcher is not None:
         assert catcher.value is not None

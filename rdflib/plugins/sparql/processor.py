@@ -12,56 +12,56 @@ from typing import Any, Mapping, Optional, Union
 from rdflib.graph import Graph
 from rdflib.plugins.sparql.algebra import translateQuery, translateUpdate
 from rdflib.plugins.sparql.evaluate import evalQuery
-from rdflib.plugins.sparql.parser import parseQuery, parseUpdate
+from rdflib.plugins.sparql.parser import parse_query, parse_update
 from rdflib.plugins.sparql.sparql import Query, Update
-from rdflib.plugins.sparql.update import evalUpdate
+from rdflib.plugins.sparql.update import eval_update
 from rdflib.query import Processor, Result, UpdateProcessor
 from rdflib.term import Identifier
 
 
-def prepareQuery(
-    queryString: str,
-    initNs: Optional[Mapping[str, Any]] = None,
+def prepare_query(
+    query_string: str,
+    init_ns: Optional[Mapping[str, Any]] = None,
     base: Optional[str] = None,
 ) -> Query:
     """
     Parse and translate a SPARQL Query
     """
-    if initNs is None:
-        initNs = {}
-    ret = translateQuery(parseQuery(queryString), base, initNs)
-    ret._original_args = (queryString, initNs, base)
+    if init_ns is None:
+        init_ns = {}
+    ret = translateQuery(parse_query(query_string), base, init_ns)
+    ret._original_args = (query_string, init_ns, base)
     return ret
 
 
-def prepareUpdate(
-    updateString: str,
-    initNs: Optional[Mapping[str, Any]] = None,
+def prepare_update(
+    update_string: str,
+    init_ns: Optional[Mapping[str, Any]] = None,
     base: Optional[str] = None,
 ) -> Update:
     """
     Parse and translate a SPARQL Update
     """
-    if initNs is None:
-        initNs = {}
-    ret = translateUpdate(parseUpdate(updateString), base, initNs)
-    ret._original_args = (updateString, initNs, base)
+    if init_ns is None:
+        init_ns = {}
+    ret = translateUpdate(parse_update(update_string), base, init_ns)
+    ret._original_args = (update_string, init_ns, base)
     return ret
 
 
-def processUpdate(
+def process_update(
     graph: Graph,
-    updateString: str,
-    initBindings: Optional[Mapping[str, Identifier]] = None,
-    initNs: Optional[Mapping[str, Any]] = None,
+    update_string: str,
+    init_bindings: Optional[Mapping[str, Identifier]] = None,
+    init_ns: Optional[Mapping[str, Any]] = None,
     base: Optional[str] = None,
 ) -> None:
     """
     Process a SPARQL Update Request
     returns Nothing on success or raises Exceptions on error
     """
-    evalUpdate(
-        graph, translateUpdate(parseUpdate(updateString), base, initNs), initBindings
+    eval_update(
+        graph, translateUpdate(parse_update(update_string), base, init_ns), init_bindings
     )
 
 
@@ -81,9 +81,9 @@ class SPARQLUpdateProcessor(UpdateProcessor):
 
     def update(
         self,
-        strOrQuery: Union[str, Update],
-        initBindings: Optional[Mapping[str, Identifier]] = None,
-        initNs: Optional[Mapping[str, Any]] = None,
+        str_or_query: Union[str, Update],
+        init_bindings: Optional[Mapping[str, Identifier]] = None,
+        init_ns: Optional[Mapping[str, Any]] = None,
     ) -> None:
         """
         .. caution::
@@ -100,10 +100,10 @@ class SPARQLUpdateProcessor(UpdateProcessor):
            documentation.
         """
 
-        if isinstance(strOrQuery, str):
-            strOrQuery = translateUpdate(parseUpdate(strOrQuery), initNs=initNs)
+        if isinstance(str_or_query, str):
+            str_or_query = translateUpdate(parse_update(str_or_query), initNs=init_ns)
 
-        return evalUpdate(self.graph, strOrQuery, initBindings)
+        return eval_update(self.graph, str_or_query, init_bindings)
 
 
 class SPARQLProcessor(Processor):
@@ -116,11 +116,11 @@ class SPARQLProcessor(Processor):
     # type error: Signature of "query" incompatible with supertype "Processor"
     def query(  # type: ignore[override]
         self,
-        strOrQuery: Union[str, Query],
-        initBindings: Optional[Mapping[str, Identifier]] = None,
-        initNs: Optional[Mapping[str, Any]] = None,
+        str_or_query: Union[str, Query],
+        init_bindings: Optional[Mapping[str, Identifier]] = None,
+        init_ns: Optional[Mapping[str, Any]] = None,
         base: Optional[str] = None,
-        DEBUG: bool = False,
+        debug: bool = False,
     ) -> Mapping[str, Any]:
         """
         Evaluate a query with the given initial bindings, and initial
@@ -141,7 +141,7 @@ class SPARQLProcessor(Processor):
            documentation.
         """
 
-        if isinstance(strOrQuery, str):
-            strOrQuery = translateQuery(parseQuery(strOrQuery), base, initNs)
+        if isinstance(str_or_query, str):
+            str_or_query = translateQuery(parse_query(str_or_query), base, init_ns)
 
-        return evalQuery(self.graph, strOrQuery, initBindings, base)
+        return evalQuery(self.graph, str_or_query, init_bindings, base)

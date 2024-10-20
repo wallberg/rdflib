@@ -87,11 +87,11 @@ class TSVResultParser(ResultParser):
 
             row = ROW.parseString(line, parseAll=True)
             # type error: Generator has incompatible item type "object"; expected "Identifier"
-            r.bindings.append(dict(zip(r.vars, (self.convertTerm(x) for x in row))))  # type: ignore[misc]
+            r.bindings.append(dict(zip(r.vars, (self.convert_term(x) for x in row))))  # type: ignore[misc]
 
         return r
 
-    def convertTerm(
+    def convert_term(
         self, t: Union[object, RDFLiteral, BNode, CompValue, URIRef]
     ) -> typing.Optional[Union[object, BNode, URIRef, RDFLiteral]]:
         if t is NONE_VALUE:

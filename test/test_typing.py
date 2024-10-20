@@ -108,8 +108,8 @@ WHERE {
 
     nsdict = {k: v for (k, v) in graph.namespace_manager.namespaces()}
 
-    prepared_one_usage_query = rdflib.plugins.sparql.processor.prepareQuery(
-        one_usage_query, initNs=nsdict
+    prepared_one_usage_query = rdflib.plugins.sparql.processor.prepare_query(
+        one_usage_query, init_ns=nsdict
     )
     computed_one_usage_from_prepared_query: Set[Identifier] = set()
     for prepared_one_usage_result in graph.query(prepared_one_usage_query):

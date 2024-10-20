@@ -60,7 +60,7 @@ def test_sparql_parse_reserved_char_percent_encoded(reserved_char_percent_encode
     assert list(res)[0][0] == rdflib.term.Literal("value")
 
     assert reserved_char_percent_encoded in str(
-        rdflib.plugins.sparql.parser.parseQuery(q)
+        rdflib.plugins.sparql.parser.parse_query(q)
     )
 
 

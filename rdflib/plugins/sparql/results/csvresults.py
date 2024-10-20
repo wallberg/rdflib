@@ -38,20 +38,20 @@ class CSVResultParser(ResultParser):
         r.bindings = []
 
         for row in reader:
-            r.bindings.append(self.parseRow(row, r.vars))
+            r.bindings.append(self.parse_row(row, r.vars))
 
         return r
 
-    def parseRow(
+    def parse_row(
         self, row: List[str], v: List[Variable]
     ) -> Dict[Variable, Union[BNode, URIRef, Literal]]:
         return dict(
             (var, val)
-            for var, val in zip(v, [self.convertTerm(t) for t in row])
+            for var, val in zip(v, [self.convert_term(t) for t in row])
             if val is not None
         )
 
-    def convertTerm(self, t: str) -> Optional[Union[BNode, URIRef, Literal]]:
+    def convert_term(self, t: str) -> Optional[Union[BNode, URIRef, Literal]]:
         if t == "":
             return None
         if t.startswith("_:"):
@@ -86,14 +86,14 @@ class CSVResultSerializer(ResultSerializer):
 
         out = csv.writer(string_stream, delimiter=self.delim)
 
-        vs = [self.serializeTerm(v, encoding) for v in self.result.vars]  # type: ignore[union-attr]
+        vs = [self.serialize_term(v, encoding) for v in self.result.vars]  # type: ignore[union-attr]
         out.writerow(vs)
         for row in self.result.bindings:
             out.writerow(
-                [self.serializeTerm(row.get(v), encoding) for v in self.result.vars]  # type: ignore[union-attr]
+                [self.serialize_term(row.get(v), encoding) for v in self.result.vars]  # type: ignore[union-attr]
             )
 
-    def serializeTerm(
+    def serialize_term(
         self, term: Optional[Identifier], encoding: str
     ) -> Union[str, Identifier]:
         if term is None:

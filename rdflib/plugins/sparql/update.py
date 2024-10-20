@@ -16,14 +16,14 @@ from rdflib.plugins.sparql.sparql import FrozenDict, QueryContext, Update
 from rdflib.term import Identifier, URIRef, Variable
 
 
-def _graphOrDefault(ctx: QueryContext, g: str) -> Optional[Graph]:
+def _graph_or_default(ctx: QueryContext, g: str) -> Optional[Graph]:
     if g == "DEFAULT":
         return ctx.graph
     else:
         return ctx.dataset.get_context(g)
 
 
-def _graphAll(ctx: QueryContext, g: str) -> Sequence[Graph]:
+def _graph_all(ctx: QueryContext, g: str) -> Sequence[Graph]:
     """
     return a list of graphs
     """
@@ -43,7 +43,7 @@ def _graphAll(ctx: QueryContext, g: str) -> Sequence[Graph]:
         return [ctx.dataset.get_context(g)]
 
 
-def evalLoad(ctx: QueryContext, u: CompValue) -> None:
+def eval_load(ctx: QueryContext, u: CompValue) -> None:
     """
     http://www.w3.org/TR/sparql11-update/#load
     """
@@ -57,7 +57,7 @@ def evalLoad(ctx: QueryContext, u: CompValue) -> None:
         ctx.load(u.iri, default=True)
 
 
-def evalCreate(ctx: QueryContext, u: CompValue) -> None:
+def eval_create(ctx: QueryContext, u: CompValue) -> None:
     """
     http://www.w3.org/TR/sparql11-update/#create
     """
@@ -67,26 +67,26 @@ def evalCreate(ctx: QueryContext, u: CompValue) -> None:
     raise Exception("Create not implemented!")
 
 
-def evalClear(ctx: QueryContext, u: CompValue) -> None:
+def eval_clear(ctx: QueryContext, u: CompValue) -> None:
     """
     http://www.w3.org/TR/sparql11-update/#clear
     """
-    for g in _graphAll(ctx, u.graphiri):
+    for g in _graph_all(ctx, u.graphiri):
         g.remove((None, None, None))
 
 
-def evalDrop(ctx: QueryContext, u: CompValue) -> None:
+def eval_drop(ctx: QueryContext, u: CompValue) -> None:
     """
     http://www.w3.org/TR/sparql11-update/#drop
     """
     if ctx.dataset.store.graph_aware:
-        for g in _graphAll(ctx, u.graphiri):
+        for g in _graph_all(ctx, u.graphiri):
             ctx.dataset.store.remove_graph(g)
     else:
-        evalClear(ctx, u)
+        eval_clear(ctx, u)
 
 
-def evalInsertData(ctx: QueryContext, u: CompValue) -> None:
+def eval_insert_data(ctx: QueryContext, u: CompValue) -> None:
     """
     http://www.w3.org/TR/sparql11-update/#insertData
     """
@@ -101,7 +101,7 @@ def evalInsertData(ctx: QueryContext, u: CompValue) -> None:
         cg += u.quads[g]
 
 
-def evalDeleteData(ctx: QueryContext, u: CompValue) -> None:
+def eval_delete_data(ctx: QueryContext, u: CompValue) -> None:
     """
     http://www.w3.org/TR/sparql11-update/#deleteData
     """
@@ -117,7 +117,7 @@ def evalDeleteData(ctx: QueryContext, u: CompValue) -> None:
         cg -= u.quads[g]
 
 
-def evalDeleteWhere(ctx: QueryContext, u: CompValue) -> None:
+def eval_delete_where(ctx: QueryContext, u: CompValue) -> None:
     """
     http://www.w3.org/TR/sparql11-update/#deleteWhere
     """
@@ -125,7 +125,7 @@ def evalDeleteWhere(ctx: QueryContext, u: CompValue) -> None:
     res: Iterator[FrozenDict] = evalBGP(ctx, u.triples)
     for g in u.quads:
         cg = ctx.dataset.get_context(g)
-        c = ctx.pushGraph(cg)
+        c = ctx.push_graph(cg)
         res = _join(res, list(evalBGP(c, u.quads[g])))
 
     # type error: Incompatible types in assignment (expression has type "FrozenBindings", variable has type "QueryContext")
@@ -138,20 +138,20 @@ def evalDeleteWhere(ctx: QueryContext, u: CompValue) -> None:
             cg -= _fillTemplate(u.quads[g], c)
 
 
-def evalModify(ctx: QueryContext, u: CompValue) -> None:
+def eval_modify(ctx: QueryContext, u: CompValue) -> None:
     originalctx = ctx
 
     # Using replaces the dataset for evaluating the where-clause
     dg: Optional[Graph]
     if u.using:
-        otherDefault = False
+        other_default = False
         for d in u.using:
             if d.default:
-                if not otherDefault:
+                if not other_default:
                     # replace current default graph
                     dg = Graph()
-                    ctx = ctx.pushGraph(dg)
-                    otherDefault = True
+                    ctx = ctx.push_graph(dg)
+                    other_default = True
 
                 ctx.load(d.default, default=True)
 
@@ -170,16 +170,16 @@ def evalModify(ctx: QueryContext, u: CompValue) -> None:
     # clause."
     if not u.using and u.withClause:
         g = ctx.dataset.get_context(u.withClause)
-        ctx = ctx.pushGraph(g)
+        ctx = ctx.push_graph(g)
 
     res = evalPart(ctx, u.where)
 
     if u.using:
-        if otherDefault:
+        if other_default:
             ctx = originalctx  # restore original default graph
         if u.withClause:
             g = ctx.dataset.get_context(u.withClause)
-            ctx = ctx.pushGraph(g)
+            ctx = ctx.push_graph(g)
 
     for c in res:
         dg = ctx.graph
@@ -202,7 +202,7 @@ def evalModify(ctx: QueryContext, u: CompValue) -> None:
                 cg += _fillTemplate(q, c)
 
 
-def evalAdd(ctx: QueryContext, u: CompValue) -> None:
+def eval_add(ctx: QueryContext, u: CompValue) -> None:
     """
 
     add all triples from src to dst
@@ -211,8 +211,8 @@ def evalAdd(ctx: QueryContext, u: CompValue) -> None:
     """
     src, dst = u.graph
 
-    srcg = _graphOrDefault(ctx, src)
-    dstg = _graphOrDefault(ctx, dst)
+    srcg = _graph_or_default(ctx, src)
+    dstg = _graph_or_default(ctx, dst)
 
     # type error: Item "None" of "Optional[Graph]" has no attribute "identifier"
     if srcg.identifier == dstg.identifier:  # type: ignore[union-attr]
@@ -222,7 +222,7 @@ def evalAdd(ctx: QueryContext, u: CompValue) -> None:
     dstg += srcg  # type: ignore[operator]
 
 
-def evalMove(ctx: QueryContext, u: CompValue) -> None:
+def eval_move(ctx: QueryContext, u: CompValue) -> None:
     """
 
     remove all triples from dst
@@ -234,8 +234,8 @@ def evalMove(ctx: QueryContext, u: CompValue) -> None:
 
     src, dst = u.graph
 
-    srcg = _graphOrDefault(ctx, src)
-    dstg = _graphOrDefault(ctx, dst)
+    srcg = _graph_or_default(ctx, src)
+    dstg = _graph_or_default(ctx, dst)
 
     # type error: Item "None" of "Optional[Graph]" has no attribute "identifier"
     if srcg.identifier == dstg.identifier:  # type: ignore[union-attr]
@@ -255,7 +255,7 @@ def evalMove(ctx: QueryContext, u: CompValue) -> None:
         srcg.remove((None, None, None))  # type: ignore[union-attr]
 
 
-def evalCopy(ctx: QueryContext, u: CompValue) -> None:
+def eval_copy(ctx: QueryContext, u: CompValue) -> None:
     """
 
     remove all triples from dst
@@ -266,8 +266,8 @@ def evalCopy(ctx: QueryContext, u: CompValue) -> None:
 
     src, dst = u.graph
 
-    srcg = _graphOrDefault(ctx, src)
-    dstg = _graphOrDefault(ctx, dst)
+    srcg = _graph_or_default(ctx, src)
+    dstg = _graph_or_default(ctx, dst)
 
     # type error: Item "None" of "Optional[Graph]" has no attribute "remove"
     if srcg.identifier == dstg.identifier:  # type: ignore[union-attr]
@@ -280,10 +280,10 @@ def evalCopy(ctx: QueryContext, u: CompValue) -> None:
     dstg += srcg  # type: ignore[operator]
 
 
-def evalUpdate(
+def eval_update(
     graph: Graph,
     update: Update,
-    initBindings: Optional[Mapping[str, Identifier]] = None,
+    init_bindings: Optional[Mapping[str, Identifier]] = None,
 ) -> None:
     """
 
@@ -318,34 +318,34 @@ def evalUpdate(
     """
 
     for u in update.algebra:
-        initBindings = dict((Variable(k), v) for k, v in (initBindings or {}).items())
+        init_bindings = dict((Variable(k), v) for k, v in (init_bindings or {}).items())
 
-        ctx = QueryContext(graph, initBindings=initBindings)
+        ctx = QueryContext(graph, init_bindings=init_bindings)
         ctx.prologue = u.prologue
 
         try:
             if u.name == "Load":
-                evalLoad(ctx, u)
+                eval_load(ctx, u)
             elif u.name == "Clear":
-                evalClear(ctx, u)
+                eval_clear(ctx, u)
             elif u.name == "Drop":
-                evalDrop(ctx, u)
+                eval_drop(ctx, u)
             elif u.name == "Create":
-                evalCreate(ctx, u)
+                eval_create(ctx, u)
             elif u.name == "Add":
-                evalAdd(ctx, u)
+                eval_add(ctx, u)
             elif u.name == "Move":
-                evalMove(ctx, u)
+                eval_move(ctx, u)
             elif u.name == "Copy":
-                evalCopy(ctx, u)
+                eval_copy(ctx, u)
             elif u.name == "InsertData":
-                evalInsertData(ctx, u)
+                eval_insert_data(ctx, u)
             elif u.name == "DeleteData":
-                evalDeleteData(ctx, u)
+                eval_delete_data(ctx, u)
             elif u.name == "DeleteWhere":
-                evalDeleteWhere(ctx, u)
+                eval_delete_where(ctx, u)
             elif u.name == "Modify":
-                evalModify(ctx, u)
+                eval_modify(ctx, u)
             else:
                 raise Exception("Unknown update operation: %s" % (u,))
         except:  # noqa: E722

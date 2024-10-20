@@ -14,7 +14,7 @@ from typing import (
     overload,
 )
 
-from rdflib.plugins.sparql.operators import EBV
+from rdflib.plugins.sparql.operators import ebv
 from rdflib.plugins.sparql.parserutils import CompValue, Expr
 from rdflib.plugins.sparql.sparql import (
     FrozenBindings,
@@ -45,7 +45,7 @@ def _minus(
     a: Iterable[_FrozenDictT], b: Iterable[_FrozenDictT]
 ) -> Generator[_FrozenDictT, None, None]:
     for x in a:
-        if all((not x.compatible(y)) or x.disjointDomain(y) for y in b):
+        if all((not x.compatible(y)) or x.disjoint_domain(y) for y in b):
             yield x
 
 
@@ -80,12 +80,12 @@ def _ebv(expr: Union[Literal, Variable, Expr], ctx: FrozenDict) -> bool:
     """
 
     try:
-        return EBV(expr)
+        return ebv(expr)
     except SPARQLError:
         pass
     if isinstance(expr, Expr):
         try:
-            return EBV(expr.eval(ctx))
+            return ebv(expr.eval(ctx))
         except SPARQLError:
             return False  # filter error == False
     # type error: Subclass of "Literal" and "CompValue" cannot exist: would have incompatible method signatures
@@ -93,7 +93,7 @@ def _ebv(expr: Union[Literal, Variable, Expr], ctx: FrozenDict) -> bool:
         raise Exception("Weird - filter got a CompValue without evalfn! %r" % expr)
     elif isinstance(expr, Variable):
         try:
-            return EBV(ctx[expr])
+            return ebv(ctx[expr])
         except:  # noqa: E722
             return False
     return False

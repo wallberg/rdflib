@@ -1,5 +1,5 @@
 from rdflib import ConjunctiveGraph, Literal, URIRef, Variable
-from rdflib.plugins.sparql import prepareQuery
+from rdflib.plugins.sparql import prepare_query
 from test.utils.namespace import EGDC
 
 g = ConjunctiveGraph()
@@ -257,7 +257,7 @@ def test_distinct_order_by_limit():
 
 
 def test_prepare():
-    q = prepareQuery("SELECT ?target WHERE { }")
+    q = prepare_query("SELECT ?target WHERE { }")
     r = list(g.query(q))
     e = []
     assert r == e, "prepare: %r != %r" % (r, e)

@@ -12,14 +12,14 @@ from pathlib import Path
 
 import rdflib
 from rdflib.namespace import FOAF
-from rdflib.plugins.sparql import prepareQuery
+from rdflib.plugins.sparql import prepare_query
 
 EXAMPLES_DIR = Path(__file__).parent
 
 if __name__ == "__main__":
-    q = prepareQuery(
+    q = prepare_query(
         "SELECT ?name WHERE { ?person foaf:knows/foaf:name ?name . }",
-        initNs={"foaf": FOAF},
+        init_ns={"foaf": FOAF},
     )
 
     g = rdflib.Graph()

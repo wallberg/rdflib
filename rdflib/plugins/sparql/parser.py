@@ -46,15 +46,15 @@ def neg(literal: rdflib.Literal) -> rdflib.Literal:
     return rdflib.Literal(-literal, datatype=literal.datatype)
 
 
-def setLanguage(terms: Tuple[Any, OptionalType[str]]) -> rdflib.Literal:
+def set_language(terms: Tuple[Any, OptionalType[str]]) -> rdflib.Literal:
     return rdflib.Literal(terms[0], lang=terms[1])
 
 
-def setDataType(terms: Tuple[Any, OptionalType[str]]) -> rdflib.Literal:
+def set_data_type(terms: Tuple[Any, OptionalType[str]]) -> rdflib.Literal:
     return rdflib.Literal(terms[0], datatype=terms[1])
 
 
-def expandTriples(terms: ParseResults) -> List[Any]:
+def expand_triples(terms: ParseResults) -> List[Any]:
     """
     Expand ; and , syntax for repeat predicates, subjects
     """
@@ -107,7 +107,7 @@ def expandTriples(terms: ParseResults) -> List[Any]:
         raise
 
 
-def expandBNodeTriples(terms: ParseResults) -> List[Any]:
+def expand_bnode_triples(terms: ParseResults) -> List[Any]:
     """
     expand [ ?p ?o ] syntax for implicit bnodes
     """
@@ -117,14 +117,14 @@ def expandBNodeTriples(terms: ParseResults) -> List[Any]:
             print("Bnode terms", terms)
             print("1", terms[0])
             print("2", [rdflib.BNode()] + terms.asList()[0])
-        return [expandTriples([rdflib.BNode()] + terms.asList()[0])]
+        return [expand_triples([rdflib.BNode()] + terms.asList()[0])]
     except Exception as e:
         if DEBUG:
             print(">>>>>>>>", e)
         raise
 
 
-def expandCollection(terms: ParseResults) -> List[List[Any]]:
+def expand_collection(terms: ParseResults) -> List[List[Any]]:
     """
     expand ( 1 2 3 ) notation for collections
     """
@@ -532,11 +532,11 @@ GroupGraphPattern = Forward()
 
 # [102] Collection ::= '(' OneOrMore(GraphNode) ')'
 Collection = Suppress("(") + OneOrMore(GraphNode) + Suppress(")")
-Collection.setParseAction(expandCollection)
+Collection.setParseAction(expand_collection)
 
 # [103] CollectionPath ::= '(' OneOrMore(GraphNodePath) ')'
 CollectionPath = Suppress("(") + OneOrMore(GraphNodePath) + Suppress(")")
-CollectionPath.setParseAction(expandCollection)
+CollectionPath.setParseAction(expand_collection)
 
 # [80] Object ::= GraphNode
 Object = GraphNode
@@ -563,13 +563,13 @@ PropertyList = Optional(PropertyListNotEmpty)
 
 # [99] BlankNodePropertyList ::= '[' PropertyListNotEmpty ']'
 BlankNodePropertyList = Group(Suppress("[") + PropertyListNotEmpty + Suppress("]"))
-BlankNodePropertyList.setParseAction(expandBNodeTriples)
+BlankNodePropertyList.setParseAction(expand_bnode_triples)
 
 # [101] BlankNodePropertyListPath ::= '[' PropertyListPathNotEmpty ']'
 BlankNodePropertyListPath = Group(
     Suppress("[") + PropertyListPathNotEmpty + Suppress("]")
 )
-BlankNodePropertyListPath.setParseAction(expandBNodeTriples)
+BlankNodePropertyListPath.setParseAction(expand_bnode_triples)
 
 # [98] TriplesNode ::= Collection | BlankNodePropertyList
 TriplesNode <<= Collection | BlankNodePropertyList
@@ -579,7 +579,7 @@ TriplesNodePath <<= CollectionPath | BlankNodePropertyListPath
 
 # [75] TriplesSameSubject ::= VarOrTerm PropertyListNotEmpty | TriplesNode PropertyList
 TriplesSameSubject = VarOrTerm + PropertyListNotEmpty | TriplesNode + PropertyList
-TriplesSameSubject.setParseAction(expandTriples)
+TriplesSameSubject.setParseAction(expand_triples)
 
 # [52] TriplesTemplate ::= TriplesSameSubject ( '.' TriplesTemplate? )?
 # NOTE: pyparsing.py handling of recursive rules is limited by python's recursion
@@ -619,7 +619,7 @@ QuadData = "{" + Param("quads", Quads) + "}"
 TriplesSameSubjectPath = (
     VarOrTerm + PropertyListPathNotEmpty | TriplesNodePath + PropertyListPath
 )
-TriplesSameSubjectPath.setParseAction(expandTriples)
+TriplesSameSubjectPath.setParseAction(expand_triples)
 
 # [55] TriplesBlock ::= TriplesSameSubjectPath ( '.' Optional(TriplesBlock) )?
 TriplesBlock = Forward()
@@ -657,7 +657,7 @@ RegexExpression = Comp(
     + Optional("," + Param("flags", Expression))
     + ")",
 )
-RegexExpression.setEvalFn(op.Builtin_REGEX)
+RegexExpression.set_eval_fn(op.Builtin_REGEX)
 
 # [123] SubstringExpression ::= 'SUBSTR' '(' Expression ',' Expression ( ',' Expression )? ')'
 SubstringExpression = Comp(
@@ -669,7 +669,7 @@ SubstringExpression = Comp(
     + Param("start", Expression)
     + Optional("," + Param("length", Expression))
     + ")",
-).setEvalFn(op.Builtin_SUBSTR)
+).set_eval_fn(op.Builtin_SUBSTR)
 
 # [124] StrReplaceExpression ::= 'REPLACE' '(' Expression ',' Expression ',' Expression ( ',' Expression )? ')'
 StrReplaceExpression = Comp(
@@ -683,18 +683,18 @@ StrReplaceExpression = Comp(
     + Param("replacement", Expression)
     + Optional("," + Param("flags", Expression))
     + ")",
-).setEvalFn(op.Builtin_REPLACE)
+).set_eval_fn(op.Builtin_REPLACE)
 
 # [125] ExistsFunc ::= 'EXISTS' GroupGraphPattern
 ExistsFunc = Comp(
     "Builtin_EXISTS", Keyword("EXISTS") + Param("graph", GroupGraphPattern)
-).setEvalFn(op.Builtin_EXISTS)
+).set_eval_fn(op.Builtin_EXISTS)
 
 # [126] NotExistsFunc ::= 'NOT' 'EXISTS' GroupGraphPattern
 NotExistsFunc = Comp(
     "Builtin_NOTEXISTS",
     Keyword("NOT") + Keyword("EXISTS") + Param("graph", GroupGraphPattern),
-).setEvalFn(op.Builtin_EXISTS)
+).set_eval_fn(op.Builtin_EXISTS)
 
 
 # [127] Aggregate ::= 'COUNT' '(' 'DISTINCT'? ( '*' | Expression ) ')'
@@ -793,10 +793,10 @@ BuiltInCall = (
     Aggregate
     | Comp(
         "Builtin_STR", Keyword("STR") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_STR)
+    ).set_eval_fn(op.Builtin_STR)
     | Comp(
         "Builtin_LANG", Keyword("LANG") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_LANG)
+    ).set_eval_fn(op.Builtin_LANG)
     | Comp(
         "Builtin_LANGMATCHES",
         Keyword("LANGMATCHES")
@@ -805,53 +805,53 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_LANGMATCHES)
+    ).set_eval_fn(op.Builtin_LANGMATCHES)
     | Comp(
         "Builtin_DATATYPE", Keyword("DATATYPE") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_DATATYPE)
-    | Comp("Builtin_BOUND", Keyword("BOUND") + "(" + Param("arg", Var) + ")").setEvalFn(
+    ).set_eval_fn(op.Builtin_DATATYPE)
+    | Comp("Builtin_BOUND", Keyword("BOUND") + "(" + Param("arg", Var) + ")").set_eval_fn(
         op.Builtin_BOUND
     )
     | Comp(
         "Builtin_IRI", Keyword("IRI") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_IRI)
+    ).set_eval_fn(op.Builtin_IRI)
     | Comp(
         "Builtin_URI", Keyword("URI") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_IRI)
+    ).set_eval_fn(op.Builtin_IRI)
     | Comp(
         "Builtin_BNODE", Keyword("BNODE") + ("(" + Param("arg", Expression) + ")" | NIL)
-    ).setEvalFn(op.Builtin_BNODE)
-    | Comp("Builtin_RAND", Keyword("RAND") + NIL).setEvalFn(op.Builtin_RAND)
+    ).set_eval_fn(op.Builtin_BNODE)
+    | Comp("Builtin_RAND", Keyword("RAND") + NIL).set_eval_fn(op.Builtin_RAND)
     | Comp(
         "Builtin_ABS", Keyword("ABS") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_ABS)
+    ).set_eval_fn(op.Builtin_ABS)
     | Comp(
         "Builtin_CEIL", Keyword("CEIL") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_CEIL)
+    ).set_eval_fn(op.Builtin_CEIL)
     | Comp(
         "Builtin_FLOOR", Keyword("FLOOR") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_FLOOR)
+    ).set_eval_fn(op.Builtin_FLOOR)
     | Comp(
         "Builtin_ROUND", Keyword("ROUND") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_ROUND)
+    ).set_eval_fn(op.Builtin_ROUND)
     | Comp(
         "Builtin_CONCAT", Keyword("CONCAT") + Param("arg", ExpressionList)
-    ).setEvalFn(op.Builtin_CONCAT)
+    ).set_eval_fn(op.Builtin_CONCAT)
     | SubstringExpression
     | Comp(
         "Builtin_STRLEN", Keyword("STRLEN") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_STRLEN)
+    ).set_eval_fn(op.Builtin_STRLEN)
     | StrReplaceExpression
     | Comp(
         "Builtin_UCASE", Keyword("UCASE") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_UCASE)
+    ).set_eval_fn(op.Builtin_UCASE)
     | Comp(
         "Builtin_LCASE", Keyword("LCASE") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_LCASE)
+    ).set_eval_fn(op.Builtin_LCASE)
     | Comp(
         "Builtin_ENCODE_FOR_URI",
         Keyword("ENCODE_FOR_URI") + "(" + Param("arg", Expression) + ")",
-    ).setEvalFn(op.Builtin_ENCODE_FOR_URI)
+    ).set_eval_fn(op.Builtin_ENCODE_FOR_URI)
     | Comp(
         "Builtin_CONTAINS",
         Keyword("CONTAINS")
@@ -860,7 +860,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_CONTAINS)
+    ).set_eval_fn(op.Builtin_CONTAINS)
     | Comp(
         "Builtin_STRSTARTS",
         Keyword("STRSTARTS")
@@ -869,7 +869,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_STRSTARTS)
+    ).set_eval_fn(op.Builtin_STRSTARTS)
     | Comp(
         "Builtin_STRENDS",
         Keyword("STRENDS")
@@ -878,7 +878,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_STRENDS)
+    ).set_eval_fn(op.Builtin_STRENDS)
     | Comp(
         "Builtin_STRBEFORE",
         Keyword("STRBEFORE")
@@ -887,7 +887,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_STRBEFORE)
+    ).set_eval_fn(op.Builtin_STRBEFORE)
     | Comp(
         "Builtin_STRAFTER",
         Keyword("STRAFTER")
@@ -896,52 +896,52 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_STRAFTER)
+    ).set_eval_fn(op.Builtin_STRAFTER)
     | Comp(
         "Builtin_YEAR", Keyword("YEAR") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_YEAR)
+    ).set_eval_fn(op.Builtin_YEAR)
     | Comp(
         "Builtin_MONTH", Keyword("MONTH") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_MONTH)
+    ).set_eval_fn(op.Builtin_MONTH)
     | Comp(
         "Builtin_DAY", Keyword("DAY") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_DAY)
+    ).set_eval_fn(op.Builtin_DAY)
     | Comp(
         "Builtin_HOURS", Keyword("HOURS") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_HOURS)
+    ).set_eval_fn(op.Builtin_HOURS)
     | Comp(
         "Builtin_MINUTES", Keyword("MINUTES") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_MINUTES)
+    ).set_eval_fn(op.Builtin_MINUTES)
     | Comp(
         "Builtin_SECONDS", Keyword("SECONDS") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_SECONDS)
+    ).set_eval_fn(op.Builtin_SECONDS)
     | Comp(
         "Builtin_TIMEZONE", Keyword("TIMEZONE") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_TIMEZONE)
+    ).set_eval_fn(op.Builtin_TIMEZONE)
     | Comp(
         "Builtin_TZ", Keyword("TZ") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_TZ)
-    | Comp("Builtin_NOW", Keyword("NOW") + NIL).setEvalFn(op.Builtin_NOW)
-    | Comp("Builtin_UUID", Keyword("UUID") + NIL).setEvalFn(op.Builtin_UUID)
-    | Comp("Builtin_STRUUID", Keyword("STRUUID") + NIL).setEvalFn(op.Builtin_STRUUID)
+    ).set_eval_fn(op.Builtin_TZ)
+    | Comp("Builtin_NOW", Keyword("NOW") + NIL).set_eval_fn(op.Builtin_NOW)
+    | Comp("Builtin_UUID", Keyword("UUID") + NIL).set_eval_fn(op.Builtin_UUID)
+    | Comp("Builtin_STRUUID", Keyword("STRUUID") + NIL).set_eval_fn(op.Builtin_STRUUID)
     | Comp(
         "Builtin_MD5", Keyword("MD5") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_MD5)
+    ).set_eval_fn(op.Builtin_MD5)
     | Comp(
         "Builtin_SHA1", Keyword("SHA1") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_SHA1)
+    ).set_eval_fn(op.Builtin_SHA1)
     | Comp(
         "Builtin_SHA256", Keyword("SHA256") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_SHA256)
+    ).set_eval_fn(op.Builtin_SHA256)
     | Comp(
         "Builtin_SHA384", Keyword("SHA384") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_SHA384)
+    ).set_eval_fn(op.Builtin_SHA384)
     | Comp(
         "Builtin_SHA512", Keyword("SHA512") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_SHA512)
+    ).set_eval_fn(op.Builtin_SHA512)
     | Comp(
         "Builtin_COALESCE", Keyword("COALESCE") + Param("arg", ExpressionList)
-    ).setEvalFn(op.Builtin_COALESCE)
+    ).set_eval_fn(op.Builtin_COALESCE)
     | Comp(
         "Builtin_IF",
         Keyword("IF")
@@ -952,7 +952,7 @@ BuiltInCall = (
         + ","
         + Param("arg3", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_IF)
+    ).set_eval_fn(op.Builtin_IF)
     | Comp(
         "Builtin_STRLANG",
         Keyword("STRLANG")
@@ -961,7 +961,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_STRLANG)
+    ).set_eval_fn(op.Builtin_STRLANG)
     | Comp(
         "Builtin_STRDT",
         Keyword("STRDT")
@@ -970,7 +970,7 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_STRDT)
+    ).set_eval_fn(op.Builtin_STRDT)
     | Comp(
         "Builtin_sameTerm",
         Keyword("sameTerm")
@@ -979,22 +979,22 @@ BuiltInCall = (
         + ","
         + Param("arg2", Expression)
         + ")",
-    ).setEvalFn(op.Builtin_sameTerm)
+    ).set_eval_fn(op.Builtin_sameTerm)
     | Comp(
         "Builtin_isIRI", Keyword("isIRI") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_isIRI)
+    ).set_eval_fn(op.Builtin_isIRI)
     | Comp(
         "Builtin_isURI", Keyword("isURI") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_isIRI)
+    ).set_eval_fn(op.Builtin_isIRI)
     | Comp(
         "Builtin_isBLANK", Keyword("isBLANK") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_isBLANK)
+    ).set_eval_fn(op.Builtin_isBLANK)
     | Comp(
         "Builtin_isLITERAL", Keyword("isLITERAL") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_isLITERAL)
+    ).set_eval_fn(op.Builtin_isLITERAL)
     | Comp(
         "Builtin_isNUMERIC", Keyword("isNUMERIC") + "(" + Param("arg", Expression) + ")"
-    ).setEvalFn(op.Builtin_isNUMERIC)
+    ).set_eval_fn(op.Builtin_isNUMERIC)
     | RegexExpression
     | ExistsFunc
     | NotExistsFunc
@@ -1010,12 +1010,12 @@ ArgList = (
 )
 
 # [128] iriOrFunction ::= iri Optional(ArgList)
-iriOrFunction = (
-    Comp("Function", Param("iri", iri) + ArgList).setEvalFn(op.Function)
+iri_or_function = (
+    Comp("Function", Param("iri", iri) + ArgList).set_eval_fn(op.Function)
 ) | iri
 
 # [70] FunctionCall ::= iri ArgList
-FunctionCall = Comp("Function", Param("iri", iri) + ArgList).setEvalFn(op.Function)
+FunctionCall = Comp("Function", Param("iri", iri) + ArgList).set_eval_fn(op.Function)
 
 
 # [120] BrackettedExpression ::= '(' Expression ')'
@@ -1025,7 +1025,7 @@ BrackettedExpression = Suppress("(") + Expression + Suppress(")")
 PrimaryExpression = (
     BrackettedExpression
     | BuiltInCall
-    | iriOrFunction
+    | iri_or_function
     | RDFLiteral
     | NumericLiteral
     | BooleanLiteral
@@ -1037,9 +1037,9 @@ PrimaryExpression = (
 # | '-' PrimaryExpression
 # | PrimaryExpression
 UnaryExpression = (
-    Comp("UnaryNot", "!" + Param("expr", PrimaryExpression)).setEvalFn(op.UnaryNot)
-    | Comp("UnaryPlus", "+" + Param("expr", PrimaryExpression)).setEvalFn(op.UnaryPlus)
-    | Comp("UnaryMinus", "-" + Param("expr", PrimaryExpression)).setEvalFn(
+    Comp("UnaryNot", "!" + Param("expr", PrimaryExpression)).set_eval_fn(op.UnaryNot)
+    | Comp("UnaryPlus", "+" + Param("expr", PrimaryExpression)).set_eval_fn(op.UnaryPlus)
+    | Comp("UnaryMinus", "-" + Param("expr", PrimaryExpression)).set_eval_fn(
         op.UnaryMinus
     )
     | PrimaryExpression
@@ -1053,7 +1053,7 @@ MultiplicativeExpression = Comp(
         ParamList("op", "*") + ParamList("other", UnaryExpression)
         | ParamList("op", "/") + ParamList("other", UnaryExpression)
     ),
-).setEvalFn(op.MultiplicativeExpression)
+).set_eval_fn(op.MultiplicativeExpression)
 
 # [116] AdditiveExpression ::= MultiplicativeExpression ( '+' MultiplicativeExpression | '-' MultiplicativeExpression | ( NumericLiteralPositive | NumericLiteralNegative ) ( ( '*' UnaryExpression ) | ( '/' UnaryExpression ) )* )*
 
@@ -1071,7 +1071,7 @@ AdditiveExpression = Comp(
         ParamList("op", "+") + ParamList("other", MultiplicativeExpression)
         | ParamList("op", "-") + ParamList("other", MultiplicativeExpression)
     ),
-).setEvalFn(op.AdditiveExpression)
+).set_eval_fn(op.AdditiveExpression)
 
 
 # [115] NumericExpression ::= AdditiveExpression
@@ -1095,7 +1095,7 @@ RelationalExpression = Comp(
         )
         + Param("other", ExpressionList)
     ),
-).setEvalFn(op.RelationalExpression)
+).set_eval_fn(op.relational_expression)
 
 
 # [113] ValueLogical ::= RelationalExpression
@@ -1105,14 +1105,14 @@ ValueLogical = RelationalExpression
 ConditionalAndExpression = Comp(
     "ConditionalAndExpression",
     Param("expr", ValueLogical) + ZeroOrMore("&&" + ParamList("other", ValueLogical)),
-).setEvalFn(op.ConditionalAndExpression)
+).set_eval_fn(op.conditional_and_expression)
 
 # [111] ConditionalOrExpression ::= ConditionalAndExpression ( '||' ConditionalAndExpression )*
 ConditionalOrExpression = Comp(
     "ConditionalOrExpression",
     Param("expr", ConditionalAndExpression)
     + ZeroOrMore("||" + ParamList("other", ConditionalAndExpression)),
-).setEvalFn(op.ConditionalOrExpression)
+).set_eval_fn(op.conditional_or_xpression)
 
 # [110] Expression ::= ConditionalOrExpression
 Expression <<= ConditionalOrExpression
@@ -1513,12 +1513,12 @@ QueryUnit.ignore("#" + restOfLine)
 UpdateUnit.ignore("#" + restOfLine)
 
 
-expandUnicodeEscapes_re: re.Pattern = re.compile(
+expand_unicode_escapes_re: re.Pattern = re.compile(
     r"\\u([0-9a-f]{4}(?:[0-9a-f]{4})?)", flags=re.I
 )
 
 
-def expandUnicodeEscapes(q: str) -> str:
+def expand_unicode_escapes(q: str) -> str:
     r"""
     The syntax of the SPARQL Query Language is expressed over code points in Unicode [UNICODE]. The encoding is always UTF-8 [RFC3629].
     Unicode code points may also be expressed using an \ uXXXX (U+0 to U+FFFF) or \ UXXXXXXXX syntax (for U+10000 onwards) where X is a hexadecimal digit [0-9A-F]
@@ -1530,25 +1530,25 @@ def expandUnicodeEscapes(q: str) -> str:
         except (ValueError, OverflowError) as e:
             raise ValueError("Invalid unicode code point: " + m.group(1)) from e
 
-    return expandUnicodeEscapes_re.sub(expand, q)
+    return expand_unicode_escapes_re.sub(expand, q)
 
 
-def parseQuery(q: Union[str, bytes, TextIO, BinaryIO]) -> ParseResults:
+def parse_query(q: Union[str, bytes, TextIO, BinaryIO]) -> ParseResults:
     if hasattr(q, "read"):
         q = q.read()
     if isinstance(q, bytes):
         q = q.decode("utf-8")
 
-    q = expandUnicodeEscapes(q)
+    q = expand_unicode_escapes(q)
     return Query.parseString(q, parseAll=True)
 
 
-def parseUpdate(q: Union[str, bytes, TextIO, BinaryIO]) -> CompValue:
+def parse_update(q: Union[str, bytes, TextIO, BinaryIO]) -> CompValue:
     if hasattr(q, "read"):
         q = q.read()
 
     if isinstance(q, bytes):
         q = q.decode("utf-8")
 
-    q = expandUnicodeEscapes(q)
+    q = expand_unicode_escapes(q)
     return UpdateUnit.parseString(q, parseAll=True)[0]

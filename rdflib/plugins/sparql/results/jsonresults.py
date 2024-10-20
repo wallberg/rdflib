@@ -58,7 +58,7 @@ class JSONResultSerializer(ResultSerializer):
             res["head"] = {}
             res["head"]["vars"] = self.result.vars
             res["results"]["bindings"] = [
-                self._bindingToJSON(x) for x in self.result.bindings
+                self._binding_to_json(x) for x in self.result.bindings
             ]
         if _HAS_ORJSON:
             try:
@@ -84,12 +84,12 @@ class JSONResultSerializer(ResultSerializer):
             else:
                 stream.write(r_str)
 
-    def _bindingToJSON(self, b: Mapping[Variable, Identifier]) -> Dict[Variable, Any]:
+    def _binding_to_json(self, b: Mapping[Variable, Identifier]) -> Dict[Variable, Any]:
         res = {}
         for var in b:
-            j = termToJSON(self, b[var])
+            j = term_to_json(self, b[var])
             if j is not None:
-                res[var] = termToJSON(self, b[var])
+                res[var] = term_to_json(self, b[var])
         return res
 
 
@@ -114,14 +114,14 @@ class JSONResult(Result):
     def _get_bindings(self) -> MutableSequence[Mapping[Variable, Identifier]]:
         ret: MutableSequence[Mapping[Variable, Identifier]] = []
         for row in self.json["results"]["bindings"]:
-            outRow: Dict[Variable, Identifier] = {}
+            out_row: Dict[Variable, Identifier] = {}
             for k, v in row.items():
-                outRow[Variable(k)] = parseJsonTerm(v)
-            ret.append(outRow)
+                out_row[Variable(k)] = parse_json_term(v)
+            ret.append(out_row)
         return ret
 
 
-def parseJsonTerm(d: Dict[str, str]) -> Identifier:
+def parse_json_term(d: Dict[str, str]) -> Identifier:
     """rdflib object (Literal, URIRef, BNode) for the given json-format dict.
 
     input is like:
@@ -142,7 +142,7 @@ def parseJsonTerm(d: Dict[str, str]) -> Identifier:
         raise NotImplementedError("json term type %r" % t)
 
 
-def termToJSON(
+def term_to_json(
     self: JSONResultSerializer, term: Optional[Identifier]
 ) -> Optional[Dict[str, str]]:
     if isinstance(term, URIRef):

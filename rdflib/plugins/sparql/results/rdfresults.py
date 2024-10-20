@@ -34,9 +34,9 @@ class RDFResult(Result):
             g += graph
 
         else:
-            askAnswer = graph.value(rs, RS.boolean)
+            ask_answer = graph.value(rs, RS.boolean)
 
-            if askAnswer is not None:
+            if ask_answer is not None:
                 type_ = "ASK"
             else:
                 type_ = "SELECT"
@@ -61,10 +61,10 @@ class RDFResult(Result):
         elif type_ == "ASK":
             # type error: Item "Node" of "Optional[Node]" has no attribute "value"
             # type error: Item "None" of "Optional[Node]" has no attribute "value"
-            self.askAnswer = askAnswer.value  # type: ignore[union-attr]
+            self.askAnswer = ask_answer.value  # type: ignore[union-attr]
             # type error: Item "Node" of "Optional[Node]" has no attribute "value"
             # type error: Item "None" of "Optional[Node]" has no attribute "value"
-            if askAnswer.value is None:  # type: ignore[union-attr]
+            if ask_answer.value is None:  # type: ignore[union-attr]
                 raise Exception("Malformed boolean in ask answer!")
         elif type_ == "CONSTRUCT":
             self.graph = g

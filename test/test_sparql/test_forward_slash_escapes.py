@@ -23,7 +23,7 @@ from typing import Set
 import pytest
 
 from rdflib import Graph
-from rdflib.plugins.sparql.processor import prepareQuery
+from rdflib.plugins.sparql.processor import prepare_query
 from rdflib.plugins.sparql.sparql import Query
 from rdflib.query import ResultRow
 from test.data import TEST_DATA_DIR
@@ -73,7 +73,7 @@ def _test_query_prepares(query_string: str) -> None:
     }
     # TODO: A 'strict' flag for prepareQuery is under consideration to
     # adjust parse behavior around backslash characters.
-    query_object = prepareQuery(query_string, initNs=nsdict)
+    query_object = prepare_query(query_string, init_ns=nsdict)
     assert isinstance(query_object, Query)
 
 
@@ -106,7 +106,7 @@ def _test_escapes_and_query(
 
     query_compiled: bool = False
     try:
-        query_object = prepareQuery(query_string)
+        query_object = prepare_query(query_string)
         query_compiled = True
     except Exception:
         pass

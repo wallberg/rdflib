@@ -3,7 +3,7 @@ from rdflib.plugins import sparql
 
 
 def test_issue():
-    query = sparql.prepareQuery(  # noqa: F841
+    query = sparql.prepare_query(  # noqa: F841
         """
             SELECT DISTINCT ?property ?parent
             WHERE{
@@ -13,5 +13,5 @@ def test_issue():
                 ?property rdfs:label | skos:altLabel ?label .
             }
         """,
-        initNs={"rdfs": RDFS, "owl": OWL, "dc": DC, "skos": SKOS},
+        init_ns={"rdfs": RDFS, "owl": OWL, "dc": DC, "skos": SKOS},
     )

@@ -236,7 +236,7 @@ def evalGraph(
             if graph == ctx.dataset.default_context:
                 continue
 
-            c = ctx.pushGraph(graph)
+            c = ctx.push_graph(graph)
             c = c.push()
             graphSolution = [{part.term: graph.identifier}]
             for x in _join(evalPart(c, part.p), graphSolution):
@@ -247,7 +247,7 @@ def evalGraph(
         if TYPE_CHECKING:
             assert not isinstance(graph, Graph)
         # type error: Argument 1 to "get_context" of "ConjunctiveGraph" has incompatible type "Union[str, Path]"; expected "Union[Node, str, None]"
-        c = ctx.pushGraph(ctx.dataset.get_context(graph))  # type: ignore[arg-type]
+        c = ctx.push_graph(ctx.dataset.get_context(graph))  # type: ignore[arg-type]
         for x in evalPart(c, part.p):
             x.ctx.graph = prev_graph
             yield x
@@ -401,7 +401,7 @@ def evalServiceQuery(ctx: QueryContext, part: CompValue):
 
 def _buildQueryStringForServiceCall(ctx: QueryContext, service_query: str) -> str:
     try:
-        parser.parseQuery(service_query)
+        parser.parse_query(service_query)
     except ParseException:
         # This could be because we don't have a select around the service call.
         service_query = "SELECT REDUCED * WHERE {" + service_query + "}"
@@ -677,7 +677,7 @@ def evalQuery(
     initBindings = dict((Variable(k), v) for k, v in (initBindings or {}).items())
 
     ctx = QueryContext(
-        graph, initBindings=initBindings, datasetClause=main.datasetClause
+        graph, init_bindings=initBindings, dataset_clause=main.datasetClause
     )
 
     ctx.prologue = query.prologue

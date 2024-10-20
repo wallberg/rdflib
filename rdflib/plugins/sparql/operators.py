@@ -115,7 +115,7 @@ def Builtin_IF(expr: Expr, ctx):
     http://www.w3.org/TR/sparql11-query/#func-if
     """
 
-    return expr.arg2 if EBV(expr.arg1) else expr.arg3
+    return expr.arg2 if ebv(expr.arg1) else expr.arg3
 
 
 def Builtin_RAND(expr: Expr, ctx) -> Literal:
@@ -727,7 +727,7 @@ def default_cast(e: Expr, ctx: FrozenBindings) -> Literal:  # type: ignore[retur
 
 
 def UnaryNot(expr: Expr, ctx: FrozenBindings) -> Literal:
-    return Literal(not EBV(expr.expr))
+    return Literal(not ebv(expr.expr))
 
 
 def UnaryMinus(expr: Expr, ctx: FrozenBindings) -> Literal:
@@ -782,7 +782,7 @@ def AdditiveExpression(e: Expr, ctx: Union[QueryContext, FrozenBindings]) -> Lit
     if hasattr(expr, "datatype") and (
         expr.datatype in XSD_DateTime_DTs or expr.datatype in XSD_Duration_DTs
     ):
-        res = dateTimeObjects(expr)
+        res = date_time_objects(expr)
         dt = expr.datatype
 
         for op, term in zip(e.op, other):
@@ -797,21 +797,21 @@ def AdditiveExpression(e: Expr, ctx: Union[QueryContext, FrozenBindings]) -> Lit
                     # type error: Too many arguments for "SPARQLError"
                     raise SPARQLError(error_message, dt.datatype)  # type: ignore[call-arg]
                 else:
-                    n = dateTimeObjects(term)
-                    res = calculateDuration(res, n)
+                    n = date_time_objects(term)
+                    res = calculate_duration(res, n)
                     return res
 
             # datetime,date,time +/- duration,dayTimeDuration,yearMonthDuration
             elif dt in XSD_DateTime_DTs and term.datatype in XSD_Duration_DTs:
-                n = dateTimeObjects(term)
-                res = calculateFinalDateTime(res, dt, n, term.datatype, op)
+                n = date_time_objects(term)
+                res = calculate_final_datetime(res, dt, n, term.datatype, op)
                 return res
 
             # duration,dayTimeDuration,yearMonthDuration + datetime,date,time
             elif dt in XSD_Duration_DTs and term.datatype in XSD_DateTime_DTs:
                 if op == "+":
-                    n = dateTimeObjects(term)
-                    res = calculateFinalDateTime(res, dt, n, term.datatype, op)
+                    n = date_time_objects(term)
+                    res = calculate_final_datetime(res, dt, n, term.datatype, op)
                     return res
 
             # rest are invalid types
@@ -841,7 +841,7 @@ def AdditiveExpression(e: Expr, ctx: Union[QueryContext, FrozenBindings]) -> Lit
         return Literal(res, datatype=dt)
 
 
-def RelationalExpression(e: Expr, ctx: Union[QueryContext, FrozenBindings]) -> Literal:
+def relational_expression(e: Expr, ctx: Union[QueryContext, FrozenBindings]) -> Literal:
     expr = e.expr
     other = e.other
     op = e.op
@@ -920,7 +920,7 @@ def RelationalExpression(e: Expr, ctx: Union[QueryContext, FrozenBindings]) -> L
     return Literal(r)
 
 
-def ConditionalAndExpression(
+def conditional_and_expression(
     e: Expr, ctx: Union[QueryContext, FrozenBindings]
 ) -> Literal:
     # TODO: handle returned errors
@@ -933,10 +933,10 @@ def ConditionalAndExpression(
     if other is None:
         return expr
 
-    return Literal(all(EBV(x) for x in [expr] + other))
+    return Literal(all(ebv(x) for x in [expr] + other))
 
 
-def ConditionalOrExpression(
+def conditional_or_xpression(
     e: Expr, ctx: Union[QueryContext, FrozenBindings]
 ) -> Literal:
     # TODO: handle errors
@@ -954,7 +954,7 @@ def ConditionalOrExpression(
     error = None
     for x in [expr] + other:
         try:
-            if EBV(x):
+            if ebv(x):
                 return Literal(True)
         except SPARQLError as e:
             error = e
@@ -973,7 +973,7 @@ def and_(*args: Expr) -> Expr:
 
     return Expr(
         "ConditionalAndExpression",
-        ConditionalAndExpression,
+        conditional_and_expression,
         expr=args[0],
         other=list(args[1:]),
     )
@@ -1073,7 +1073,7 @@ def numeric(expr: Literal) -> Any:
     return expr.toPython()
 
 
-def dateTimeObjects(expr: Literal) -> Any:
+def date_time_objects(expr: Literal) -> Any:
     """
     return a dataTime/date/time/duration/dayTimeDuration/yearMonthDuration python objects from a literal
 
@@ -1082,7 +1082,7 @@ def dateTimeObjects(expr: Literal) -> Any:
 
 
 # type error: Missing return statement
-def isCompatibleDateTimeDatatype(  # type: ignore[return]
+def is_compatible_datetime_datatype(  # type: ignore[return]
     obj1: Union[py_datetime.date, py_datetime.datetime],
     dt1: URIRef,
     obj2: Union[isodate.Duration, py_datetime.timedelta],
@@ -1121,7 +1121,7 @@ def isCompatibleDateTimeDatatype(  # type: ignore[return]
         return True
 
 
-def calculateDuration(
+def calculate_duration(
     obj1: Union[py_datetime.date, py_datetime.datetime],
     obj2: Union[py_datetime.date, py_datetime.datetime],
 ) -> Literal:
@@ -1136,7 +1136,7 @@ def calculateDuration(
     return Literal(difference, datatype=XSD.duration)
 
 
-def calculateFinalDateTime(
+def calculate_final_datetime(
     obj1: Union[py_datetime.date, py_datetime.datetime],
     dt1: URIRef,
     obj2: Union[isodate.Duration, py_datetime.timedelta],
@@ -1149,7 +1149,7 @@ def calculateFinalDateTime(
     """
 
     # checking compatibility of datatypes (duration types and date/time/dateTime)
-    if isCompatibleDateTimeDatatype(obj1, dt1, obj2, dt2):
+    if is_compatible_datetime_datatype(obj1, dt1, obj2, dt2):
         # proceed
         if operation == "-":
             ans = obj1 - obj2
@@ -1163,18 +1163,18 @@ def calculateFinalDateTime(
 
 
 @overload
-def EBV(rt: Literal) -> bool: ...
+def ebv(rt: Literal) -> bool: ...
 
 
 @overload
-def EBV(rt: Union[Variable, IdentifiedNode, SPARQLError, Expr]) -> NoReturn: ...
+def ebv(rt: Union[Variable, IdentifiedNode, SPARQLError, Expr]) -> NoReturn: ...
 
 
 @overload
-def EBV(rt: Union[Identifier, SPARQLError, Expr]) -> Union[bool, NoReturn]: ...
+def ebv(rt: Union[Identifier, SPARQLError, Expr]) -> Union[bool, NoReturn]: ...
 
 
-def EBV(rt: Union[Identifier, SPARQLError, Expr]) -> bool:
+def ebv(rt: Union[Identifier, SPARQLError, Expr]) -> bool:
     """
     Effective Boolean Value (EBV)
 
@@ -1198,9 +1198,9 @@ def EBV(rt: Union[Identifier, SPARQLError, Expr]) -> bool:
             return len(rt) > 0
 
         else:
-            pyRT = rt.toPython()
+            py_rt = rt.toPython()
 
-            if isinstance(pyRT, Literal):
+            if isinstance(py_rt, Literal):
                 # Type error, see: http://www.w3.org/TR/rdf-sparql-query/#ebv
                 raise SPARQLTypeError(
                     "http://www.w3.org/TR/rdf-sparql-query/#ebv - ' + \
@@ -1208,7 +1208,7 @@ def EBV(rt: Union[Identifier, SPARQLError, Expr]) -> bool:
                     % rt
                 )
             else:
-                return bool(pyRT)
+                return bool(py_rt)
 
     else:
         raise SPARQLTypeError(
@@ -1246,11 +1246,11 @@ def _lang_range_check(range: Literal, lang: Literal) -> bool:
         """
         return r == "*" or r == l_
 
-    rangeList = range.strip().lower().split("-")
-    langList = lang.strip().lower().split("-")
-    if not _match(rangeList[0], langList[0]):
+    range_list = range.strip().lower().split("-")
+    lang_list = lang.strip().lower().split("-")
+    if not _match(range_list[0], lang_list[0]):
         return False
-    if len(rangeList) > len(langList):
+    if len(range_list) > len(lang_list):
         return False
 
-    return all(_match(*x) for x in zip(rangeList, langList))
+    return all(_match(*x) for x in zip(range_list, lang_list))
